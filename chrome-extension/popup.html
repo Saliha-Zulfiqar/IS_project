@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PhishGuard AI</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="popup">
+      <header class="header">
+        <div class="header__brand">
+          <span class="header__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 2L4 6v6c0 5.25 3.4 10.15 8 11.35C16.6 22.15 20 17.25 20 12V6l-8-4z"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M9 12l2 2 4-4"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <h1 class="header__title">PhishGuard AI</h1>
+        </div>
+        <p class="header__tagline">Phishing detection &amp; risk scoring</p>
+      </header>
+
+      <main class="main">
+        <section class="card card--input" aria-labelledby="input-heading">
+          <h2 id="input-heading" class="section-title">Email to analyze</h2>
+
+          <div class="field">
+            <label class="field__label" for="sender">Sender email address</label>
+            <input
+              type="text"
+              id="sender"
+              class="field__input"
+              placeholder="sender@example.com"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="subject">Subject line</label>
+            <input
+              type="text"
+              id="subject"
+              class="field__input"
+              placeholder="Email subject"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="body">Email body</label>
+            <textarea
+              id="body"
+              class="field__textarea"
+              rows="6"
+              placeholder="Paste the full email content here…"
+            ></textarea>
+          </div>
+
+          <button type="button" id="analyze-btn" class="btn btn--primary">
+            <span class="btn__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M7 12h10M12 7v10"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
+            Analyze Email
+          </button>
+        </section>
+
+        <div id="loading" class="loading hidden" role="status" aria-live="polite">
+          <div class="loading__spinner" aria-hidden="true"></div>
+          <p class="loading__text">Scanning email with AI…</p>
+        </div>
+
+        <div id="error-message" class="error hidden" role="alert"></div>
+
+        <section id="results" class="results hidden" aria-live="polite">
+          <div class="results__hero">
+            <div id="risk-circle" class="risk-circle risk-circle--low">
+              <span id="risk-score-value" class="risk-circle__score">0</span>
+              <span class="risk-circle__label">Risk score</span>
+            </div>
+            <div class="results__meta">
+              <span id="classification-badge" class="badge badge--legitimate">LEGITIMATE</span>
+              <p class="results__level">
+                Risk level:
+                <strong id="risk-level">LOW</strong>
+              </p>
+              <p class="results__confidence">
+                Confidence:
+                <strong id="confidence">—</strong>
+              </p>
+            </div>
+          </div>
+
+          <div class="card card--panel">
+            <h3 class="panel-title">Analysis</h3>
+            <div id="reasons" class="panel-box panel-box--reasons">
+              <p class="panel-box__placeholder">Reasons will appear here after analysis.</p>
+            </div>
+          </div>
+
+          <div class="card card--panel">
+            <h3 class="panel-title">Recommendation</h3>
+            <div id="recommendation" class="panel-box panel-box--recommendation">
+              <p class="panel-box__placeholder">Action guidance will appear here.</p>
+            </div>
+          </div>
+
+          <div class="card card--panel">
+            <h3 class="panel-title">Feature breakdown</h3>
+            <dl class="features" id="features-breakdown">
+              <div class="features__row">
+                <dt>Urgency words</dt>
+                <dd id="feat-urgency">—</dd>
+              </div>
+              <div class="features__row">
+                <dt>URL count</dt>
+                <dd id="feat-url-count">—</dd>
+              </div>
+              <div class="features__row">
+                <dt>Suspicious URLs</dt>
+                <dd id="feat-suspicious-urls">—</dd>
+              </div>
+              <div class="features__row">
+                <dt>Domain mismatch</dt>
+                <dd id="feat-domain-mismatch">—</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>Powered by Groq · Local API</span>
+      </footer>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
