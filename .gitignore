@@ -1,0 +1,59 @@
+# Secrets — never commit
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+backend/.venv/
+
+# Hugging Face / model caches (downloaded at runtime)
+.cache/
+.huggingface/
+hf_cache/
+models/
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs & temp
+*.log
+*.tmp
+temp/
+tmp/
+
+# Large local artifacts (use Hugging Face Hub instead)
+phishing_detector_FINAL.zip
+*.zip
+
+# Node (if added later)
+node_modules/
