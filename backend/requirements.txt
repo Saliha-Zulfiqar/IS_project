@@ -1,0 +1,19 @@
+# CPU-only PyTorch (smaller install; no CUDA wheels)
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# API
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+python-dotenv==1.0.1
+pydantic==2.10.3
+
+# HTTP / parsing
+requests==2.32.3
+beautifulsoup4==4.12.3
+
+# Phi-3-mini + LoRA (peft + transformers must stay in sync)
+torch==2.3.1
+transformers==4.44.2
+peft==0.12.0
+accelerate==0.34.2
+sentencepiece==0.2.0
