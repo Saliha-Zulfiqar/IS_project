@@ -1,14 +1,21 @@
-import logging
-from contextlib import asynccontextmanager
-from typing import Any, Literal
+from . import groq_client
+try:
+    from . import hf_client
+    _hf_client_available = True
+except ImportError:
+    hf_client = None
+    _hf_client_available = False
+from . import feature_extractor
 
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from pydantic import BaseModel, Field
+from typing import Any, Literal
 
-import feature_extractor
-import hf_client
 
+# Duplicate analyze endpoint removed – primary endpoint uses Groq
 logger = logging.getLogger(__name__)
 
 _model_loaded = False
@@ -23,7 +30,10 @@ RECOMMENDATIONS: dict[RiskLevel, str] = {
     "LOW": "This email appears safe.",
 }
 
-MODEL_DISPLAY_NAME = f"{hf_client.BASE_MODEL} (LoRA: {hf_client.LORA_MODEL})"
+if _hf_client_available:
+    MODEL_DISPLAY_NAME = f"{hf_client.BASE_MODEL} (LoRA: {hf_client.LORA_MODEL})"
+else:
+    MODEL_DISPLAY_NAME = "Groq API (no fine‑tuned model)"
 
 
 @asynccontextmanager
@@ -32,18 +42,22 @@ async def lifespan(app: FastAPI):
     global _model_loaded
     import asyncio
 
-    logger.info("Loading Phi-3 + LoRA model (may take 2–3 minutes on first download)…")
-    try:
-        loop = asyncio.get_running_loop()
-        await loop.run_in_executor(None, hf_client.load_model)
-        _model_loaded = hf_client._cached_model is not None
-        if _model_loaded:
-            logger.info("Model loaded successfully.")
-        else:
-            logger.warning("Model load finished but cache is empty.")
-    except Exception as exc:
+    if _hf_client_available:
+        logger.info("Loading Phi-3 + LoRA model (may take 2–3 minutes on first download)…")
+        try:
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, hf_client.load_model)
+            _model_loaded = hf_client._cached_model is not None
+            if _model_loaded:
+                logger.info("Model loaded successfully.")
+            else:
+                logger.warning("Model load finished but cache is empty.")
+        except Exception as exc:
+            _model_loaded = False
+            logger.error("Failed to load model at startup: %s", exc)
+    else:
+        logger.info("Skipping model loading; hf_client unavailable.")
         _model_loaded = False
-        logger.error("Failed to load model at startup: %s", exc)
 
     yield
 
@@ -108,8 +122,6 @@ def health() -> dict[str, Any]:
         "model": MODEL_DISPLAY_NAME,
         "model_loaded": _model_loaded,
     }
-
-
 @app.post("/analyze", response_model=AnalyzeResponse)
 def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
     features = feature_extractor.extract_features(
@@ -117,14 +129,12 @@ def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
         subject=request.subject,
         body=request.body,
     )
-
-    analysis = hf_client.analyze_with_model(
+    analysis = groq_client.analyze_with_groq(
         sender=request.sender,
         subject=request.subject,
         body=request.body,
         features=features,
     )
-
     risk_score = int(analysis.get("risk_score", 0))
     risk_level = risk_level_from_score(risk_score)
 
@@ -145,7 +155,6 @@ def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
         features=features,
         recommendation=RECOMMENDATIONS[risk_level],
     )
-
 
 if __name__ == "__main__":
     import uvicorn

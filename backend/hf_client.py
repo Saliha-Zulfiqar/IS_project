@@ -6,12 +6,22 @@ from typing import Any
 import torch
 from dotenv import load_dotenv
 from peft import PeftModel
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
-_ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
-load_dotenv(_ENV_PATH)
+# Try standard locations for .env
+for path in [
+    Path(__file__).resolve().parent.parent / ".env",
+    Path(__file__).resolve().parent / ".env",
+    Path.cwd() / ".env",
+]:
+    if path.exists():
+        load_dotenv(path)
+        break
+else:
+    load_dotenv()
 
 HF_TOKEN = os.getenv("HF_TOKEN")
+
 
 BASE_MODEL = "microsoft/Phi-3-mini-4k-instruct"
 LORA_MODEL = "omerfarooq223/phishing-detector-phi3-lora"
@@ -67,10 +77,22 @@ def load_model():
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
+    config = AutoConfig.from_pretrained(BASE_MODEL, trust_remote_code=False, **hf_kwargs)
+    # Avoid KeyError: 'type' caused by rope_scaling config mismatch in some transformers/peft versions
+    if hasattr(config, "rope_scaling") and config.rope_scaling is not None:
+        if isinstance(config.rope_scaling, dict):
+            if "type" not in config.rope_scaling and "rope_type" in config.rope_scaling:
+                config.rope_scaling["type"] = config.rope_scaling["rope_type"]
+            elif "type" not in config.rope_scaling:
+                config.rope_scaling = None
+        else:
+            config.rope_scaling = None
+
     base_model = AutoModelForCausalLM.from_pretrained(
         BASE_MODEL,
+        config=config,
         torch_dtype=dtype,
-        trust_remote_code=True,
+        trust_remote_code=False,
         **hf_kwargs,
     )
 

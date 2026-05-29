@@ -4,40 +4,66 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PhishGuard AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="popup">
+      <div class="popup__bg" aria-hidden="true">
+        <span class="popup__orb popup__orb--1"></span>
+        <span class="popup__orb popup__orb--2"></span>
+        <span class="popup__grid"></span>
+      </div>
+
       <header class="header">
-        <div class="header__brand">
-          <span class="header__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M12 2L4 6v6c0 5.25 3.4 10.15 8 11.35C16.6 22.15 20 17.25 20 12V6l-8-4z"
-                stroke="currentColor"
-                stroke-width="1.75"
-                stroke-linejoin="round"
-              />
-              <path
-                d="M9 12l2 2 4-4"
-                stroke="currentColor"
-                stroke-width="1.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
+        <div class="header__top">
+          <div class="header__brand">
+            <span class="header__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M12 2L4 6v6c0 5.25 3.4 10.15 8 11.35C16.6 22.15 20 17.25 20 12V6l-8-4z"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M9 12l2 2 4-4"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <div>
+              <h1 class="header__title">PhishGuard AI</h1>
+              <p class="header__tagline">Phishing detection &amp; risk scoring</p>
+            </div>
+          </div>
+          <span class="header__pill">
+            <span class="header__pill-dot"></span>
+            Phi-3 LoRA
           </span>
-          <h1 class="header__title">PhishGuard AI</h1>
         </div>
-        <p class="header__tagline">Phishing detection &amp; risk scoring</p>
       </header>
 
       <main class="main">
         <section class="card card--input" aria-labelledby="input-heading">
-          <h2 id="input-heading" class="section-title">Email to analyze</h2>
+          <div class="section-head">
+            <h2 id="input-heading" class="section-title">Email to analyze</h2>
+            <span class="section-head__hint">Paste or type below</span>
+          </div>
 
           <div class="field">
-            <label class="field__label" for="sender">Sender email address</label>
+            <label class="field__label" for="sender">
+              <span class="field__label-icon" aria-hidden="true">@</span>
+              Sender email
+            </label>
             <input
               type="text"
               id="sender"
@@ -48,7 +74,10 @@
           </div>
 
           <div class="field">
-            <label class="field__label" for="subject">Subject line</label>
+            <label class="field__label" for="subject">
+              <span class="field__label-icon" aria-hidden="true">✉</span>
+              Subject line
+            </label>
             <input
               type="text"
               id="subject"
@@ -59,78 +88,95 @@
           </div>
 
           <div class="field">
-            <label class="field__label" for="body">Email body</label>
+            <label class="field__label" for="body">
+              <span class="field__label-icon" aria-hidden="true">¶</span>
+              Email body
+            </label>
             <textarea
               id="body"
               class="field__textarea"
-              rows="6"
+              rows="5"
               placeholder="Paste the full email content here…"
             ></textarea>
           </div>
 
           <button type="button" id="analyze-btn" class="btn btn--primary">
+            <span class="btn__glow" aria-hidden="true"></span>
             <span class="btn__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75" />
                 <path
-                  d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"
-                  stroke="currentColor"
-                  stroke-width="1.75"
-                  stroke-linecap="round"
-                />
-                <path
-                  d="M7 12h10M12 7v10"
+                  d="M12 8v4l2.5 2.5M8.5 3.5l1 1M15.5 3.5l-1 1"
                   stroke="currentColor"
                   stroke-width="1.75"
                   stroke-linecap="round"
                 />
               </svg>
             </span>
-            Analyze Email
+            <span class="btn__text">Analyze Email</span>
           </button>
         </section>
 
         <div id="loading" class="loading hidden" role="status" aria-live="polite">
-          <div class="loading__spinner" aria-hidden="true"></div>
-          <p class="loading__text">Scanning email with AI…</p>
+          <div class="loading__rings" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <p class="loading__text">Running AI threat analysis…</p>
+          <p class="loading__sub">Fine-tuned Phi-3 model on local API</p>
         </div>
 
         <div id="error-message" class="error hidden" role="alert"></div>
 
         <section id="results" class="results hidden" aria-live="polite">
           <div class="results__hero">
-            <div id="risk-circle" class="risk-circle risk-circle--low">
-              <span id="risk-score-value" class="risk-circle__score">0</span>
-              <span class="risk-circle__label">Risk score</span>
+            <div class="gauge">
+              <div id="risk-circle" class="risk-circle risk-circle--low">
+                <div class="risk-circle__inner">
+                  <span id="risk-score-value" class="risk-circle__score">0</span>
+                  <span class="risk-circle__label">Risk</span>
+                </div>
+              </div>
             </div>
             <div class="results__meta">
               <span id="classification-badge" class="badge badge--legitimate">LEGITIMATE</span>
-              <p class="results__level">
-                Risk level:
-                <strong id="risk-level">LOW</strong>
-              </p>
-              <p class="results__confidence">
-                Confidence:
-                <strong id="confidence">—</strong>
-              </p>
+              <div class="meta-chips">
+                <span class="meta-chip">
+                  <span class="meta-chip__label">Level</span>
+                  <strong id="risk-level">LOW</strong>
+                </span>
+                <span class="meta-chip">
+                  <span class="meta-chip__label">Confidence</span>
+                  <strong id="confidence">—</strong>
+                </span>
+              </div>
             </div>
           </div>
 
-          <div class="card card--panel">
-            <h3 class="panel-title">Analysis</h3>
+          <div class="card card--panel card--analysis">
+            <h3 class="panel-title">
+              <span class="panel-title__icon" aria-hidden="true">◈</span>
+              Analysis
+            </h3>
             <div id="reasons" class="panel-box panel-box--reasons">
               <p class="panel-box__placeholder">Reasons will appear here after analysis.</p>
             </div>
           </div>
 
-          <div class="card card--panel">
-            <h3 class="panel-title">Recommendation</h3>
+          <div class="card card--panel card--recommend">
+            <h3 class="panel-title">
+              <span class="panel-title__icon" aria-hidden="true">⚡</span>
+              Recommendation
+            </h3>
             <div id="recommendation" class="panel-box panel-box--recommendation">
               <p class="panel-box__placeholder">Action guidance will appear here.</p>
             </div>
           </div>
 
-          <div class="card card--panel">
-            <h3 class="panel-title">Feature breakdown</h3>
+          <div class="card card--panel card--features">
+            <h3 class="panel-title">
+              <span class="panel-title__icon" aria-hidden="true">▤</span>
+              Signal breakdown
+            </h3>
             <dl class="features" id="features-breakdown">
               <div class="features__row">
                 <dt>Urgency words</dt>
@@ -154,7 +200,9 @@
       </main>
 
       <footer class="footer">
-        <span>Powered by Groq · Local API</span>
+        <span class="footer__brand">PhishGuard</span>
+        <span class="footer__sep">·</span>
+        <span>Phi-3 LoRA · Local API :8000</span>
       </footer>
     </div>
 

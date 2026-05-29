@@ -8,8 +8,17 @@ from dotenv import load_dotenv
 from groq import Groq
 
 # Load .env from project root (IS_project/.env)
-_ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
-load_dotenv(_ENV_PATH)
+# Try standard locations for .env
+for path in [
+    Path(__file__).resolve().parent.parent / ".env",
+    Path(__file__).resolve().parent / ".env",
+    Path.cwd() / ".env",
+]:
+    if path.exists():
+        load_dotenv(path)
+        break
+else:
+    load_dotenv()
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_MODEL = "llama-3.3-70b-versatile"

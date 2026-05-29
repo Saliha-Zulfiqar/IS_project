@@ -52,14 +52,28 @@ Edit `.env` and set `HF_TOKEN` (see `.env.example`). Do **not** commit `.env`.
 ```bash
 cd backend
 python -m venv .venv
-# Windows
 .\.venv\Scripts\Activate.ps1
 # macOS/Linux
 # source .venv/bin/activate
 
 pip install -r requirements.txt
+# Choose backend mode:
+# 1️⃣ Local fine‑tuned model (HF) – requires HF_TOKEN
+#    Set your Hugging Face token and run:
+#    echo HF_TOKEN=your_hf_token >> .env   # or edit .env manually
+#
+# 2️⃣ Groq API – requires GROQ_API_KEY
+#    Set your Groq key and run:
+#    echo GROQ_API_KEY=your_groq_key >> .env   # or edit .env manually
+#
+# Then start the server (will pick the appropriate client based on which key is present):
 python main.py
 ```
+```bash
+# Run the backend (will select HF or Groq based on environment variables)
+python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
+```
+
 
 Wait until the server logs **Model loaded successfully.** The first run can take several minutes while weights download.
 

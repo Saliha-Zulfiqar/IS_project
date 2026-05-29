@@ -1,5 +1,7 @@
 const API_URL = "http://localhost:8000/analyze";
 
+
+
 const els = {
   sender: document.getElementById("sender"),
   subject: document.getElementById("subject"),
@@ -150,6 +152,11 @@ function clearResults() {
   els.classificationBadge.className = "badge badge--legitimate";
   els.riskLevel.textContent = "LOW";
   els.confidence.textContent = "—";
+  const levelChip = els.riskLevel.closest(".meta-chip");
+  if (levelChip) {
+    levelChip.classList.remove("meta-chip--high", "meta-chip--medium", "meta-chip--low");
+    levelChip.classList.add("meta-chip--low");
+  }
 
   els.reasons.innerHTML =
     '<p class="panel-box__placeholder">Reasons will appear here after analysis.</p>';
@@ -214,8 +221,15 @@ function displayResults(data) {
       ? "badge badge--phishing"
       : "badge badge--legitimate";
 
-  els.riskLevel.textContent = data.risk_level || "LOW";
+  const level = (data.risk_level || "LOW").toUpperCase();
+  els.riskLevel.textContent = level;
   els.confidence.textContent = data.confidence || "—";
+
+  const levelChip = els.riskLevel.closest(".meta-chip");
+  if (levelChip) {
+    levelChip.classList.remove("meta-chip--high", "meta-chip--medium", "meta-chip--low");
+    levelChip.classList.add(`meta-chip--${level.toLowerCase()}`);
+  }
 
   els.reasons.innerHTML = `<p>${escapeHtml(data.reasons || "No explanation provided.")}</p>`;
   els.recommendation.innerHTML = `<p>${escapeHtml(data.recommendation || "")}</p>`;
