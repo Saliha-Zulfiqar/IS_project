@@ -95,7 +95,7 @@ python test_api.py
 1. Open `chrome://extensions`
 2. Enable **Developer mode**
 3. **Load unpacked** → select the `chrome-extension` folder
-4. Open the PhishGuard popup → enter sender, subject, body → **Analyze Email**
+4. After loading the extension, a fixed “Analyze with PhishGuard” button appears in Gmail/Outlook (bottom‑right). Click it to open a modal overlay that automatically analyzes the currently open email.
 
 Ensure the backend stays on **http://localhost:8000**.
 

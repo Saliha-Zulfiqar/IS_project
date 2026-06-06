@@ -212,7 +212,7 @@ function validateInputs() {
 }
 
 function displayResults(data) {
-  const score = data.risk_score ?? 0;
+  const score = parseInt(data.risk_score ?? 0, 10) || 0;
   const classification = data.classification || "LEGITIMATE";
 
   els.classificationBadge.textContent = classification;
@@ -236,12 +236,8 @@ function displayResults(data) {
 
   els.featuresBreakdown.innerHTML = formatFeaturesHtml(data.features);
 
+  // Reveal results smoothly using the CSS-defined animation (fadeSlideIn) without transition conflicts
   els.results.classList.remove("hidden");
-  els.results.style.opacity = "0";
-  requestAnimationFrame(() => {
-    els.results.style.transition = "opacity 0.45s ease";
-    els.results.style.opacity = "1";
-  });
 
   animateRiskScore(score);
 }
