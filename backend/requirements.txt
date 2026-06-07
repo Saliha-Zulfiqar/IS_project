@@ -10,6 +10,7 @@ pydantic==2.10.3
 # HTTP / parsing
 requests==2.32.3
 beautifulsoup4==4.12.3
+groq>=1.4.0
 
 # Phi-3-mini + LoRA (CPU wheels from PyTorch index above)
 torch==2.7.1

@@ -1,0 +1,225 @@
+/* PhishGuard — dark mode overrides (applied via data-theme on <html>) */
+
+[data-theme="dark"] {
+  --bg-page: #0c1018;
+  --bg-sidebar: #111827;
+  --bg-card: #161f2e;
+  --bg-muted: #1a2436;
+  --bg-input: #1e293b;
+
+  --navy: #e8edf5;
+  --primary-soft: #1e2d4d;
+  --primary-deep: #93b4ff;
+
+  --coral-soft: #3d1f24;
+  --coral-text: #ff8a8a;
+
+  --emerald-soft: #142a1f;
+  --emerald-text: #6ee7a0;
+
+  --amber-soft: #2d2414;
+  --amber-text: #fbbf24;
+
+  --text-primary: #e8edf5;
+  --text-secondary: #a8b8d0;
+  --text-muted: #7b8ca8;
+  --text-dim: #5c6d88;
+
+  --border: #2a3548;
+  --border-hover: #3d4f6a;
+  --border-active: rgba(91, 127, 255, 0.55);
+
+  --glass: rgba(17, 24, 39, 0.75);
+  --glass-strong: rgba(17, 24, 39, 0.92);
+
+  --surface: #161f2e;
+  --surface-elevated: #1c2738;
+  --risk-circle-track: #2a3548;
+  --risk-score-color: #f1f5f9;
+
+  --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.55);
+  --shadow-glow: 0 8px 32px rgba(52, 97, 255, 0.2);
+
+  color-scheme: dark;
+}
+
+/* Ambient backgrounds */
+[data-theme="dark"] .dash-bg__orb--1 {
+  background: radial-gradient(circle, #1e3a6e 0%, transparent 70%);
+  opacity: 0.35;
+}
+[data-theme="dark"] .dash-bg__orb--2 {
+  background: radial-gradient(circle, #3d2e14 0%, transparent 70%);
+  opacity: 0.3;
+}
+[data-theme="dark"] .dash-bg__orb--3 {
+  background: radial-gradient(circle, #3d1f3a 0%, transparent 70%);
+  opacity: 0.28;
+}
+[data-theme="dark"] .popup__orb--1 { background: radial-gradient(circle, #1e3a6e 0%, transparent 70%); opacity: 0.35; }
+[data-theme="dark"] .popup__orb--2 { background: radial-gradient(circle, #3d2e14 0%, transparent 70%); opacity: 0.28; }
+[data-theme="dark"] .popup__orb--3 { background: radial-gradient(circle, #3d1f3a 0%, transparent 70%); opacity: 0.25; }
+
+/* Surfaces that use hardcoded white in component CSS */
+[data-theme="dark"] .sidebar__tip,
+[data-theme="dark"] .dash-header__search-input,
+[data-theme="dark"] .welcome-banner__card,
+[data-theme="dark"] .stat-card:not(.stat-card--total),
+[data-theme="dark"] .chart-card,
+[data-theme="dark"] .activity-card,
+[data-theme="dark"] .history-card,
+[data-theme="dark"] .filter-btn,
+[data-theme="dark"] .intel-card,
+[data-theme="dark"] .intel-list__item,
+[data-theme="dark"] .tip-card,
+[data-theme="dark"] .setting-group,
+[data-theme="dark"] .pagination__btn,
+[data-theme="dark"] .modal-box,
+[data-theme="dark"] .user-chip,
+[data-theme="dark"] .mail-preview,
+[data-theme="dark"] .card,
+[data-theme="dark"] .results__hero,
+[data-theme="dark"] .risk-circle__inner,
+[data-theme="dark"] .detail-block,
+[data-theme="dark"] .features,
+[data-theme="dark"] .header,
+[data-theme="dark"] .popup__header-card,
+[data-theme="dark"] .dev-profile-card,
+[data-theme="dark"] .dev-profile-card__btn,
+[data-theme="dark"] .activity-item,
+[data-theme="dark"] .empty-state,
+[data-theme="dark"] .welcome-banner__card,
+[data-theme="dark"] .activity-feed__item,
+[data-theme="dark"] .history-row-expanded,
+[data-theme="dark"] .dev-profile-card__info,
+[data-theme="dark"] .dev-profile-card__actions .dev-profile-card__btn {
+  background: var(--surface-elevated);
+}
+
+[data-theme="dark"] .dev-profile-card {
+  background: linear-gradient(165deg, var(--surface) 0%, var(--bg-muted) 100%);
+}
+
+[data-theme="dark"] .mail-preview {
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .meta-chip__value,
+[data-theme="dark"] .section-title,
+[data-theme="dark"] .loading__text {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .sidebar__tip {
+  background: linear-gradient(145deg, #1f1520 0%, #1f1a14 50%, #141e35 100%);
+}
+
+[data-theme="dark"] .welcome-banner__illus {
+  background: linear-gradient(135deg, var(--bg-muted) 0%, #1a2436 100%);
+}
+
+[data-theme="dark"] .about-card {
+  background: linear-gradient(135deg, var(--primary-soft) 0%, var(--surface) 60%);
+}
+
+[data-theme="dark"] .about-card__version {
+  background: var(--surface-elevated);
+}
+
+[data-theme="dark"] .setting-row__input:focus,
+[data-theme="dark"] .field__input:focus,
+[data-theme="dark"] .field__textarea:focus {
+  background: var(--bg-input);
+}
+
+[data-theme="dark"] .intel-list__item:hover {
+  background: var(--bg-muted);
+}
+
+[data-theme="dark"] .donut-chart__bg {
+  stroke: var(--risk-circle-track);
+}
+
+[data-theme="dark"] .history-table thead th {
+  background: var(--bg-muted);
+}
+
+[data-theme="dark"] .history-table tbody tr:hover {
+  background: var(--bg-muted);
+}
+
+[data-theme="dark"] .modal-overlay {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #3d4f6a;
+}
+
+/* Theme toggle switch */
+.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 48px;
+  height: 26px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.theme-toggle__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.theme-toggle__track {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  transition: background var(--transition-fast, 0.16s ease), border-color var(--transition-fast, 0.16s ease);
+}
+
+.theme-toggle__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background: var(--primary);
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform var(--transition-fast, 0.16s ease), background var(--transition-fast, 0.16s ease);
+}
+
+.theme-toggle__input:checked + .theme-toggle__track {
+  background: var(--primary-soft);
+  border-color: var(--border-active);
+}
+
+.theme-toggle__input:checked ~ .theme-toggle__thumb {
+  transform: translateX(22px);
+  background: var(--primary);
+}
+
+.theme-toggle__input:focus-visible + .theme-toggle__track {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.setting-row__theme-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.setting-row__theme-hint {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}

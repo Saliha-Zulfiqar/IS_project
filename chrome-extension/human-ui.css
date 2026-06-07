@@ -1,0 +1,459 @@
+/* Shared human / organic UI layer — avatars, mail cards, illustrations */
+
+:root {
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body: "DM Sans", "Segoe UI", system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+h1, .dash-header__title, .welcome-banner__greeting, .header__title,
+.stat-card__value, .mail-preview__subject, .empty-state__title,
+.modal-box__title, .about-card__title, .sidebar__title {
+  font-family: var(--font-display);
+}
+
+/* User chip (header) */
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 6px 14px 6px 6px;
+  background: #fff;
+  border: 1px solid var(--border, #e8ecf4);
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(26, 35, 64, 0.06);
+}
+
+.user-chip__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #3461ff, #7c3aed);
+  box-shadow: 0 3px 10px rgba(52, 97, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.user-chip__name {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--navy, #1a2340);
+  line-height: 1.2;
+}
+
+.user-chip__role {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 500;
+}
+
+/* Welcome hero with illustration */
+.welcome-banner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: center;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  margin-bottom: 26px;
+}
+
+.welcome-banner::after { display: none; }
+
+.welcome-banner__card {
+  position: relative;
+  padding: 28px 32px;
+  background: #fff;
+  border: 1px solid var(--border, #e8ecf4);
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(26, 35, 64, 0.07);
+  overflow: hidden;
+}
+
+.welcome-banner__card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #3461ff, #f59e0b, #ff6b6b, #22c55e);
+}
+
+.welcome-banner__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  margin-bottom: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #3461ff;
+  background: #e8eeff;
+  border-radius: 999px;
+}
+
+.welcome-banner__greeting {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--navy, #1a2340);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin-bottom: 10px;
+}
+
+.welcome-banner__desc {
+  font-size: 0.92rem;
+  color: var(--text-secondary, #5c6b8a);
+  line-height: 1.65;
+  max-width: 520px;
+}
+
+.welcome-banner__illus {
+  width: 200px;
+  height: 160px;
+  flex-shrink: 0;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #fff5f0 0%, #eef2ff 55%, #f0fdf4 100%);
+  border: 1px solid var(--border, #e8ecf4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 28px rgba(26, 35, 64, 0.06);
+}
+
+.welcome-banner__illus svg { width: 140px; height: auto; }
+
+/* Stat card decorative blobs */
+.stat-card__art {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.stat-card--phishing .stat-card__art { background: #ff6b6b; }
+.stat-card--legit .stat-card__art { background: #22c55e; }
+.stat-card--risk .stat-card__art { background: #f59e0b; }
+
+.stat-card--phishing { border-top: 3px solid #ff6b6b; }
+.stat-card--legit { border-top: 3px solid #22c55e; }
+.stat-card--risk { border-top: 3px solid #f59e0b; }
+
+/* Mail-style activity cards */
+.mail-card {
+  display: flex;
+  gap: 14px;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid var(--border, #e8ecf4);
+  border-radius: 16px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  cursor: default;
+}
+
+.mail-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(26, 35, 64, 0.08);
+}
+
+.mail-card__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+
+.mail-card__body { flex: 1; min-width: 0; }
+
+.mail-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.mail-card__from {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--navy, #1a2340);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mail-card__time {
+  font-size: 0.68rem;
+  color: var(--text-muted, #94a3b8);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mail-card__subject {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary, #1a2340);
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mail-card__preview {
+  font-size: 0.76rem;
+  color: var(--text-muted, #94a3b8);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.mail-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mail-card__score {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.mail-card__score--safe {
+  color: #15803d;
+  background: #ecfdf5;
+}
+
+.mail-card__score--warn {
+  color: #b45309;
+  background: #fffbeb;
+}
+
+.mail-card__score--danger {
+  color: #e04545;
+  background: #fff0f0;
+}
+
+/* History table avatars */
+.history-sender {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.history-sender__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.history-sender__email {
+  font-weight: 600;
+  font-size: 0.84rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Popup — mail envelope preview */
+.mail-preview {
+  position: relative;
+  padding: 18px 20px 18px 56px;
+  margin-bottom: 14px;
+  background: linear-gradient(135deg, #fff 0%, #fafbff 100%);
+  border: 1px solid #e8ecf4;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(26, 35, 64, 0.05);
+}
+
+.mail-preview::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 16px 0 0 16px;
+  background: linear-gradient(180deg, #3461ff, #7c9bff);
+}
+
+.mail-preview__stamp {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e8eeff;
+  border-radius: 10px;
+  color: #3461ff;
+}
+
+.mail-preview__stamp svg { width: 18px; height: 18px; }
+
+.mail-preview__label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.mail-preview__from {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1a2340;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mail-preview__subject {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #3461ff;
+  line-height: 1.35;
+  font-family: var(--font-display);
+}
+
+/* Softer form card */
+.card--input {
+  border-radius: 20px;
+  border-style: dashed;
+  border-color: #d5dce8;
+  background: #fafbff;
+}
+
+.card--input:focus-within {
+  border-style: solid;
+  border-color: rgba(52, 97, 255, 0.35);
+  background: #fff;
+}
+
+/* Handwritten accent */
+.accent-note {
+  font-family: "Caveat", cursive;
+  font-size: 1.05rem;
+  color: #3461ff;
+  opacity: 0.85;
+}
+
+/* Sidebar warmer */
+.sidebar__subtitle {
+  font-family: var(--font-body);
+  font-style: italic;
+}
+
+.nav-item__label { letter-spacing: -0.01em; }
+
+/* Section cards — softer headers */
+.section-card {
+  border-radius: 20px;
+}
+
+.section-card__header {
+  background: transparent;
+  border-bottom: 1px dashed #e8ecf4;
+}
+
+/* Tip cards feel like sticky notes */
+.tip-card {
+  border-radius: 18px;
+  transform: rotate(0deg);
+}
+
+.tip-card:nth-child(odd) { transform: rotate(-0.4deg); }
+.tip-card:nth-child(even) { transform: rotate(0.35deg); }
+
+.tip-card:hover { transform: rotate(0deg) translateY(-3px); }
+
+/* Organic empty state */
+.empty-state__illus {
+  width: 120px;
+  height: 100px;
+  margin-bottom: 18px;
+}
+
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.welcome-banner__illus,
+.empty-state__illus svg {
+  animation: gentleFloat 4s ease-in-out infinite;
+}
+
+/* Results — verdict strip */
+.verdict-strip {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.verdict-strip--safe {
+  background: #ecfdf5;
+  color: #166534;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.verdict-strip--danger {
+  background: #fff0f0;
+  color: #b91c1c;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.mail-card {
+  animation: fadeSlideIn 0.45s ease both;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

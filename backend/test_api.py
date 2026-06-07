@@ -43,7 +43,80 @@ TEST_CASES = [
         },
     },
     {
-        "name": "Test 3 — Subtle phishing (fake Amazon order + suspicious link)",
+        "name": "Test 3 — Google Classroom notification (should be LEGITIMATE)",
+        "payload": {
+            "sender": "classroom-noreply@google.com",
+            "subject": "New assignment posted in CS 101",
+            "body": (
+                "Hi,\n\n"
+                "A new assignment has been posted in CS 101.\n"
+                "Due date: Friday at 11:59 PM.\n\n"
+                "Open Classroom:\n"
+                "https://classroom.google.com/c/NTg2MjM4MjM4\n\n"
+                "Google Classroom Team"
+            ),
+        },
+    },
+    {
+        "name": "Test 4 — Google policy update (should be LEGITIMATE)",
+        "payload": {
+            "sender": "noreply@google.com",
+            "subject": "We're updating our Privacy Policy",
+            "body": (
+                "Hello,\n\n"
+                "We're updating our Privacy Policy to make it easier to understand. "
+                "No action is required on your part.\n\n"
+                "Read the updated policy:\n"
+                "https://policies.google.com/privacy/update\n\n"
+                "The Google Team"
+            ),
+        },
+    },
+    {
+        "name": "Test 5 — Google Classroom with urgency words (display name sender)",
+        "payload": {
+            "sender": "Google Classroom <classroom-noreply@google.com>",
+            "subject": "Action required: New coursework in Biology 201",
+            "body": (
+                "Hello,\n\n"
+                "Action required — new coursework has been posted.\n"
+                "Please verify your submission before the deadline.\n\n"
+                "Open in Classroom:\n"
+                "https://classroom.google.com/c/abc123\n\n"
+                "Google Classroom"
+            ),
+        },
+    },
+    {
+        "name": "Test 6 — Google security alert from official domain",
+        "payload": {
+            "sender": "Google <no-reply@accounts.google.com>",
+            "subject": "Security alert: new sign-in on your Google Account",
+            "body": (
+                "We noticed a new sign-in to your Google Account.\n"
+                "If this was you, no action is required.\n\n"
+                "Review activity:\n"
+                "https://accounts.google.com/AccountChooser\n\n"
+                "Google Account team"
+            ),
+        },
+    },
+    {
+        "name": "Test 7 — Smile.io vendor email mentioning Google settings (NOT phishing)",
+        "payload": {
+            "sender": "Smile.io <noreply@customer-mail.smile.io>",
+            "subject": "Two new settings to help you work better with Google",
+            "body": (
+                "Hi there,\n\n"
+                "We're introducing two new settings to help you better manage your "
+                "Google integration in Smile.io.\n\n"
+                "You can now customize how reviews sync with your Google Business Profile.\n\n"
+                "Thanks,\nThe Smile.io Team"
+            ),
+        },
+    },
+    {
+        "name": "Test 8 — Subtle phishing (fake Amazon order + suspicious link)",
         "payload": {
             "sender": "orders@amazon-security-check.com",
             "subject": "Your Amazon order #104-8821931 — action needed",

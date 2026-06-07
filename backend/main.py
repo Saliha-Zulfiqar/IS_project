@@ -1,11 +1,8 @@
 from . import groq_client
-try:
-    from . import hf_client
-    _hf_client_available = True
-except ImportError:
-    hf_client = None
-    _hf_client_available = False
+_hf_client_available = False
+hf_client = None
 from . import feature_extractor
+from .risk_scoring import finalize_analysis
 
 import logging
 from fastapi import FastAPI
@@ -117,10 +114,13 @@ def root() -> dict[str, str]:
 
 @app.get("/health")
 def health() -> dict[str, Any]:
+    groq_ready = groq_client.client is not None
+    api_ready = _model_loaded or groq_ready
     return {
-        "status": "ok" if _model_loaded else "degraded",
+        "status": "ok" if api_ready else "degraded",
         "model": MODEL_DISPLAY_NAME,
         "model_loaded": _model_loaded,
+        "groq_ready": groq_ready,
     }
 @app.post("/analyze", response_model=AnalyzeResponse)
 def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
@@ -135,6 +135,7 @@ def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
         body=request.body,
         features=features,
     )
+    analysis = finalize_analysis(features, analysis)
     risk_score = int(analysis.get("risk_score", 0))
     risk_level = risk_level_from_score(risk_score)
 

@@ -1,0 +1,122 @@
+/* PhishGuard — in-page overlay & floating action button (light theme) */
+
+#phishguard-root {
+  all: initial;
+  font-family: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+}
+
+#phishguard-root * { box-sizing: border-box; }
+
+#phishguard-analyze-btn {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 2147483646;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px 14px 16px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #fff;
+  background: linear-gradient(135deg, #3461ff 0%, #2850e0 55%, #1e2a5a 100%);
+  border: none;
+  border-radius: 16px;
+  box-shadow:
+    0 12px 32px rgba(52, 97, 255, 0.38),
+    0 4px 12px rgba(26, 35, 64, 0.12);
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.25s ease;
+  animation: pgFabEnter 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+#phishguard-analyze-btn:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 18px 40px rgba(52, 97, 255, 0.45),
+    0 6px 16px rgba(26, 35, 64, 0.14);
+}
+
+#phishguard-analyze-btn:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+#phishguard-analyze-btn .pg-fab__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+#phishguard-analyze-btn .pg-fab__icon svg { width: 18px; height: 18px; }
+#phishguard-analyze-btn .pg-fab__label { line-height: 1.2; }
+
+#phishguard-analyze-btn .pg-fab__hint {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+@keyframes pgFabEnter {
+  from { opacity: 0; transform: translateY(16px) scale(0.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+#phishguard-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.32s ease;
+}
+
+#phishguard-overlay.pg-overlay--open {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+#phishguard-overlay .pg-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 35, 64, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.32s ease;
+}
+
+#phishguard-overlay.pg-overlay--open .pg-backdrop { opacity: 1; }
+
+#phishguard-overlay .pg-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(440px, 100vw);
+  height: 100%;
+  background: #f4f6fb;
+  border-left: 1px solid #e8ecf4;
+  box-shadow: -12px 0 40px rgba(26, 35, 64, 0.12);
+  transform: translateX(100%);
+  transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+#phishguard-overlay.pg-overlay--open .pg-panel { transform: translateX(0); }
+
+#phishguard-overlay .pg-panel__iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: #f4f6fb;
+}

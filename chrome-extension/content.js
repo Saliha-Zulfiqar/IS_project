@@ -1,221 +1,248 @@
-/**
- * PhishGuard AI — content script for Gmail / Outlook.
- * Auto-extracts open email content and displays analysis overlay.
- */
-(function () {
-  if (typeof chrome === "undefined" || !chrome.runtime?.id) return;
-
-  // Inject Analyze button into UI
-  const btn = document.createElement('button');
-  btn.id = 'phishguard-analyze-btn';
-  btn.textContent = 'Analyze with PhishGuard';
-  Object.assign(btn.style, {
-    position: 'fixed',
-    bottom: '24px',
-    right: '24px',
-    zIndex: 100000,
-    padding: '12px 20px',
-    fontFamily: '"Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif',
-    fontSize: '14px',
-    fontWeight: '700',
-    background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-    color: '#ffffff',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
-    borderRadius: '10px',
-    boxShadow: '0 8px 24px rgba(59, 130, 246, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease-in-out',
-  });
-  document.body.appendChild(btn);
-
-  // Add micro-animation hover effect to floating button
-  btn.addEventListener('mouseenter', () => {
-    btn.style.transform = 'translateY(-2px)';
-    btn.style.boxShadow = '0 12px 28px rgba(59, 130, 246, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3)';
-  });
-  btn.addEventListener('mouseleave', () => {
-    btn.style.transform = 'translateY(0)';
-    btn.style.boxShadow = '0 8px 24px rgba(59, 130, 246, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
-  });
-
-  btn.addEventListener('click', async () => {
-    // Create overlay background
-    const overlay = document.createElement('div');
-    overlay.id = 'phishguard-overlay';
-    Object.assign(overlay.style, {
-      position: 'fixed',
-      inset: '0',
-      background: 'rgba(10, 10, 20, 0.75)',
-      backdropFilter: 'blur(8px)',
-      webkitBackdropFilter: 'blur(8px)',
-      zIndex: 1000000,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: '"Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif',
-    });
-
-    // Create modal card
-    const modal = document.createElement('div');
-    modal.id = 'phishguard-modal';
-    Object.assign(modal.style, {
-      position: 'relative',
-      background: 'linear-gradient(160deg, #1c2338 0%, #0d0d1a 100%)',
-      border: '1px solid rgba(148, 163, 184, 0.16)',
-      borderRadius: '16px',
-      padding: '28px',
-      maxWidth: '460px',
-      width: '90%',
-      color: '#f1f5f9',
-      boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(59, 130, 246, 0.15)',
-      boxSizing: 'border-box',
-    });
-
-    // Close button (X)
-    const closeBtn = document.createElement('button');
-    closeBtn.innerHTML = '&times;';
-    Object.assign(closeBtn.style, {
-      position: 'absolute',
-      top: '16px',
-      right: '18px',
-      background: 'none',
-      border: 'none',
-      color: '#94a3b8',
-      fontSize: '24px',
-      fontWeight: '600',
-      cursor: 'pointer',
-      lineHeight: '1',
-      padding: '4px',
-      transition: 'color 0.2s',
-    });
-    closeBtn.addEventListener('mouseenter', () => closeBtn.style.color = '#f1f5f9');
-    closeBtn.addEventListener('mouseleave', () => closeBtn.style.color = '#94a3b8');
-    closeBtn.addEventListener('click', () => overlay.remove());
-
-    const contentDiv = document.createElement('div');
-    contentDiv.id = 'phishguard-modal-content';
-    contentDiv.innerHTML = `
-      <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 8px;">
-        <span style="color: #3b82f6;">◈</span> PhishGuard AI Threat Analysis
-      </h3>
-      <p style="margin: 0; font-size: 14px; color: #94a3b8; line-height: 1.6;">Extracting email data & running AI threat analysis…</p>
-    `;
-
-    modal.appendChild(closeBtn);
-    modal.appendChild(contentDiv);
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) overlay.remove();
-    });
-
-    // Extract email data (basic heuristics)
-    const emailData = (() => {
-      let sender = '';
-      let subject = '';
-      let body = '';
-      
-      const senderEl = document.querySelector('[email]');
-      if (senderEl) {
-        sender = senderEl.getAttribute('email') || senderEl.textContent.trim();
-      }
-      
-      const subjectEl = document.querySelector('h2[data-legacy-thread-id], h2[data-message-id], h2.hP');
-      if (subjectEl) {
-        subject = subjectEl.innerText.trim();
-      }
-      
-      const bodyEl = document.querySelector('[role="textbox"][contenteditable=true]') || document.querySelector('.a3s');
-      if (bodyEl) {
-        body = bodyEl.innerText.trim();
-      }
-      
-      return { sender, subject, body };
-    })();
-
-    // Critical validation: prevent false security sense if extraction fails
-    if (!emailData.sender && !emailData.subject && !emailData.body) {
-      contentDiv.innerHTML = `
-        <h3 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 800; color: #fda4af; display: flex; align-items: center; gap: 8px;">
-          <span>⚠</span> Open Email Not Detected
-        </h3>
-        <p style="margin: 0 0 16px 0; font-size: 14px; color: #f1f5f9; line-height: 1.6;">
-          PhishGuard could not extract any email content from the page.
-        </p>
-        <div style="background: rgba(244, 63, 94, 0.08); border-left: 3px solid #f43f5e; padding: 12px 14px; border-radius: 6px; font-size: 13px; color: #fecdd3; line-height: 1.5; margin-bottom: 16px;">
-          <strong>How to analyze:</strong> Make sure you have opened a specific email thread inside Gmail or Outlook first, then click "Analyze with PhishGuard" again. Alternately, copy-paste the text manually into the PhishGuard extension popup.
-        </div>
-      `;
-      return;
-    }
-
-    try {
-      const response = await fetch('http://localhost:8000/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server status ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      // Select badge styling
-      const isPhish = data.classification === "PHISHING";
-      const badgeColor = isPhish ? '#fda4af' : '#6ee7b7';
-      const badgeBg = isPhish ? 'rgba(233, 69, 96, 0.12)' : 'rgba(16, 185, 129, 0.12)';
-      const badgeBorder = isPhish ? 'rgba(233, 69, 96, 0.5)' : 'rgba(16, 185, 129, 0.45)';
-      const riskColor = data.risk_score >= 75 ? '#fda4af' : (data.risk_score >= 45 ? '#fcd34d' : '#6ee7b7');
-
-      contentDiv.innerHTML = `
-        <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 8px;">
-          <span style="color: #3b82f6;">◈</span> Analysis Result
-        </h3>
-        
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; background: rgba(0, 0, 0, 0.2); padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05);">
-          <div>
-            <span style="display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: ${badgeColor}; background: ${badgeBg}; border: 1px solid ${badgeBorder}; padding: 4px 10px; border-radius: 99px; text-transform: uppercase;">
-              ${data.classification}
-            </span>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Risk Score</div>
-            <div style="font-size: 22px; font-weight: 800; color: ${riskColor}; line-height: 1;">${data.risk_score}<span style="font-size: 13px; color: #64748b; font-weight: 500;">/100</span></div>
-          </div>
-        </div>
-
-        <div style="margin-bottom: 16px;">
-          <div style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;">Key Signals & Reasons</div>
-          <div style="background: rgba(13, 13, 26, 0.5); padding: 12px 14px; border-radius: 8px; border-left: 3px solid #3b82f6; font-size: 13px; color: #cbd5e1; line-height: 1.6;">
-            ${data.reasons || 'No specific threat flags detected.'}
-          </div>
-        </div>
-
-        <div>
-          <div style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;">Recommendation</div>
-          <div style="background: rgba(245, 158, 11, 0.06); padding: 12px 14px; border-radius: 8px; border-left: 3px solid #f59e0b; font-size: 13px; color: #e2e8f0; line-height: 1.6;">
-            <strong>${data.risk_level} Risk:</strong> ${data.recommendation || 'Proceed with normal precautions.'}
-          </div>
-        </div>
-      `;
-    } catch (err) {
-      console.error('PhishGuard analysis error:', err);
-      contentDiv.innerHTML = `
-        <h3 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 800; color: #f43f5e; display: flex; align-items: center; gap: 8px;">
-          <span>⚠</span> Analysis Failed
-        </h3>
-        <p style="margin: 0 0 16px 0; font-size: 14px; color: #fecdd3; line-height: 1.6;">
-          Could not communicate with the PhishGuard analysis server.
-        </p>
-        <div style="background: rgba(244, 63, 94, 0.08); padding: 12px 14px; border-radius: 6px; font-size: 13px; color: #cbd5e1; line-height: 1.5;">
-          Make sure your local FastAPI backend is active and running on port 8000 (e.g., <code>python main.py</code> inside your backend directory).
-        </div>
-      `;
-    }
-  });
-
-})();
-
+/**
+ * PhishGuard AI — content script for Gmail / Outlook.
+ * Injects a floating analyze button and opens analysis in a slide-in panel within the tab.
+ */
+(function () {
+  if (typeof chrome === "undefined" || !chrome.runtime?.id) return;
+
+  const PANEL_URL = chrome.runtime.getURL("popup.html?embedded=1");
+  let overlayEl = null;
+
+  function isVisible(el) {
+    if (!el || !el.isConnected) return false;
+    const rect = el.getBoundingClientRect();
+    return rect.width > 8 && rect.height > 8 && rect.bottom > 0 && rect.top < window.innerHeight;
+  }
+
+  function formatSender(displayName, email) {
+    const name = (displayName || "").trim();
+    const addr = (email || "").trim();
+    if (!addr) return name;
+    if (!name || name === addr || name.includes("@")) return addr;
+    return `${name} <${addr}>`;
+  }
+
+  function isGmail() {
+    return /mail\.google\.com|gmail\.com/i.test(window.location.hostname);
+  }
+
+  function isOutlook() {
+    return /outlook\.(live|office|office365)\.com/i.test(window.location.hostname);
+  }
+
+  /**
+   * Gmail: scope to the open message — never use the first [email] on the page
+   * (inbox rows and footer addresses like rewards@customer-mail.smile.io are wrong).
+   */
+  function extractGmailEmailData() {
+    const main = document.querySelector('div[role="main"]');
+    if (!main) return null;
+
+    const subjectEl =
+      main.querySelector("h2.hP[data-thread-perm-id]") ||
+      main.querySelector("h2.hP[data-legacy-thread-id]") ||
+      main.querySelector("h2[data-thread-id]") ||
+      main.querySelector("h2.hP");
+    const subject = subjectEl?.innerText?.trim() || "";
+
+    const visibleBodies = [...main.querySelectorAll(".a3s")].filter(isVisible);
+    const bodyEl = visibleBodies.length
+      ? visibleBodies[visibleBodies.length - 1]
+      : main.querySelector(".a3s");
+    const body = bodyEl?.innerText?.trim() || "";
+
+    let sender = "";
+    const messageRoot =
+      bodyEl?.closest(".gs") ||
+      bodyEl?.closest("[data-message-id]") ||
+      bodyEl?.closest("[data-legacy-message-id]") ||
+      main;
+
+    if (messageRoot) {
+      const headerSpans = [...messageRoot.querySelectorAll("span[email]")].filter(
+        (el) => !bodyEl?.contains(el)
+      );
+
+      for (const el of headerSpans) {
+        const email = el.getAttribute("email")?.trim();
+        if (email && email.includes("@")) {
+          sender = formatSender(el.textContent, email);
+          break;
+        }
+      }
+
+      if (!sender) {
+        const fromChip =
+          messageRoot.querySelector("span.gD[email]") ||
+          messageRoot.querySelector("[data-hovercard-id][email]");
+        const email = fromChip?.getAttribute("email")?.trim();
+        if (email?.includes("@")) {
+          sender = formatSender(fromChip.textContent, email);
+        }
+      }
+    }
+
+    return { sender, subject, body };
+  }
+
+  function extractOutlookEmailData() {
+    const main =
+      document.querySelector('div[role="main"]') ||
+      document.querySelector('[role="region"][aria-label*="Reading"]') ||
+      document.body;
+
+    const subjectEl =
+      main.querySelector('[role="heading"][aria-level="2"]') ||
+      main.querySelector('span[id*="Subject"]') ||
+      document.querySelector('[aria-label^="Subject"]');
+    const subject = subjectEl?.innerText?.trim() || subjectEl?.textContent?.trim() || "";
+
+    const bodyEl =
+      main.querySelector('div[aria-label="Message body"]') ||
+      main.querySelector(".allowTextSelection") ||
+      main.querySelector('[role="document"]');
+    const body = bodyEl?.innerText?.trim() || "";
+
+    let sender = "";
+    const fromEl =
+      main.querySelector('[aria-label^="From:"]') ||
+      main.querySelector('span[title*="@"]') ||
+      main.querySelector('[data-testid="message-header-from"]');
+    if (fromEl) {
+      const title = fromEl.getAttribute("title") || fromEl.getAttribute("aria-label") || "";
+      const emailMatch = title.match(/[\w.+-]+@[\w.-]+\.\w+/);
+      sender = emailMatch?.[0] || fromEl.innerText?.trim() || "";
+    }
+
+    return { sender, subject, body };
+  }
+
+  function extractEmailData() {
+    if (isGmail()) {
+      const gmail = extractGmailEmailData();
+      if (gmail) return gmail;
+    }
+    if (isOutlook()) {
+      const outlook = extractOutlookEmailData();
+      if (outlook) return outlook;
+    }
+
+    // Fallback: still scope to main pane if present
+    const main = document.querySelector('div[role="main"]') || document.body;
+    const bodyEl = main.querySelector(".a3s") || main.querySelector('[role="document"]');
+    const body = bodyEl?.innerText?.trim() || "";
+
+    let sender = "";
+    const messageRoot = bodyEl?.closest(".gs") || main;
+    const headerEmail = [...messageRoot.querySelectorAll("span[email]")].find(
+      (el) => !bodyEl?.contains(el) && el.getAttribute("email")?.includes("@")
+    );
+    if (headerEmail) {
+      sender = formatSender(headerEmail.textContent, headerEmail.getAttribute("email"));
+    }
+
+    const subjectEl = main.querySelector("h2.hP, h2[data-thread-id], [role=heading][aria-level='2']");
+    const subject = subjectEl?.innerText?.trim() || "";
+
+    return { sender, subject, body };
+  }
+
+  function closePanel(immediate = false) {
+    if (!overlayEl) return;
+    const el = overlayEl;
+    overlayEl = null;
+    document.body.style.overflow = "";
+
+    if (immediate) {
+      el.parentNode?.removeChild(el);
+      return;
+    }
+
+    el.classList.remove("pg-overlay--open");
+    setTimeout(() => el.parentNode?.removeChild(el), 380);
+  }
+
+  function openPanel(emailData) {
+    if (overlayEl) {
+      closePanel(true);
+    }
+
+    chrome.storage.local.set({ pending_analysis: emailData }, () => {
+      overlayEl = document.createElement("div");
+      overlayEl.id = "phishguard-overlay";
+      overlayEl.setAttribute("role", "dialog");
+      overlayEl.setAttribute("aria-label", "PhishGuard email analysis");
+      overlayEl.innerHTML = `
+        <div class="pg-backdrop" data-pg-close></div>
+        <div class="pg-panel">
+          <iframe
+            class="pg-panel__iframe"
+            src="${PANEL_URL}"
+            title="PhishGuard AI Analysis"
+            allow="clipboard-read; clipboard-write"
+          ></iframe>
+        </div>
+      `;
+
+      document.body.appendChild(overlayEl);
+      document.body.style.overflow = "hidden";
+
+      requestAnimationFrame(() => {
+        overlayEl.classList.add("pg-overlay--open");
+      });
+
+      overlayEl.querySelector("[data-pg-close]").addEventListener("click", closePanel);
+    });
+  }
+
+  window.addEventListener("message", (event) => {
+    if (event.data?.type === "phishguard-close") {
+      closePanel();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && overlayEl) {
+      closePanel();
+    }
+  });
+
+  if (!document.querySelector('link[data-phishguard-font]')) {
+    const fontLink = document.createElement("link");
+    fontLink.rel = "stylesheet";
+    fontLink.href =
+      "https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&display=swap";
+    fontLink.setAttribute("data-phishguard-font", "");
+    document.head.appendChild(fontLink);
+  }
+
+  const root = document.createElement("div");
+  root.id = "phishguard-root";
+
+  const btn = document.createElement("button");
+  btn.id = "phishguard-analyze-btn";
+  btn.type = "button";
+  btn.setAttribute("aria-label", "Analyze this email with PhishGuard AI");
+  btn.innerHTML = `
+    <span class="pg-fab__icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L4 6v6c0 5.25 3.4 10.15 8 11.35C16.6 22.15 20 17.25 20 12V6l-8-4z"
+          stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+        <path d="M9 12l2 2 4-4"
+          stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span class="pg-fab__label">
+      Is this email safe?
+      <span class="pg-fab__hint">Quick scan · takes ~5 sec</span>
+    </span>
+  `;
+
+  btn.addEventListener("click", () => {
+    openPanel(extractEmailData());
+  });
+
+  root.appendChild(btn);
+  document.body.appendChild(root);
+})();
+

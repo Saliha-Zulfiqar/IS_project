@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PhishGuard AI — Dashboard</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="icon32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="icon16.png" />
+    <link rel="apple-touch-icon" href="icon128.png" />
+    <meta name="description" content="PhishGuard AI security dashboard — email threat analysis history, statistics, and intelligence." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&display=swap"
+      rel="stylesheet"
+    />
+    <script src="theme.js"></script>
+    <link rel="stylesheet" href="dashboard.css" />
+    <link rel="stylesheet" href="human-ui.css" />
+    <link rel="stylesheet" href="dev-profile.css" />
+    <link rel="stylesheet" href="theme.css" />
+  </head>
+  <body>
+    <!-- Ambient Background -->
+    <div class="dash-bg" aria-hidden="true">
+      <span class="dash-bg__orb dash-bg__orb--1"></span>
+      <span class="dash-bg__orb dash-bg__orb--2"></span>
+      <span class="dash-bg__orb dash-bg__orb--3"></span>
+      <span class="dash-bg__grid"></span>
+    </div>
+
+    <div class="dash-layout">
+      <!-- ═══ Sidebar ═══ -->
+      <aside class="sidebar">
+        <div class="sidebar__brand">
+          <span class="sidebar__logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 2L4 6v6c0 5.25 3.4 10.15 8 11.35C16.6 22.15 20 17.25 20 12V6l-8-4z"
+                stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"
+              />
+              <path
+                d="M9 12l2 2 4-4"
+                stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <div>
+            <div class="sidebar__title">PhishGuard AI</div>
+            <div class="sidebar__subtitle">keeping your inbox safe</div>
+          </div>
+        </div>
+
+        <nav class="sidebar__nav">
+          <button class="nav-item nav-item--active" data-tab="overview" id="nav-overview">
+            <span class="nav-item__icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.75"/><rect x="13" y="3" width="8" height="5" rx="2" stroke="currentColor" stroke-width="1.75"/><rect x="13" y="10" width="8" height="11" rx="2" stroke="currentColor" stroke-width="1.75"/><rect x="3" y="13" width="8" height="8" rx="2" stroke="currentColor" stroke-width="1.75"/></svg></span>
+            <span class="nav-item__label">Home</span>
+          </button>
+          <button class="nav-item" data-tab="history" id="nav-history">
+            <span class="nav-item__icon"><svg viewBox="0 0 24 24" fill="none"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+            <span class="nav-item__label">Past scans</span>
+            <span class="nav-item__badge" id="history-count-badge" style="display:none;">0</span>
+          </button>
+          <button class="nav-item" data-tab="intelligence" id="nav-intelligence">
+            <span class="nav-item__icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2L4 6v6c0 5.25 3.4 10.15 8 11.35C16.6 22.15 20 17.25 20 12V6l-8-4z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></svg></span>
+            <span class="nav-item__label">Patterns</span>
+          </button>
+          <button class="nav-item" data-tab="settings" id="nav-settings">
+            <span class="nav-item__icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.75"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></span>
+            <span class="nav-item__label">Settings</span>
+          </button>
+        </nav>
+
+        <div class="sidebar__promo">
+          <div class="sidebar__promo-title">Stay one step ahead</div>
+          <div class="sidebar__promo-text">Scan suspicious emails before you click — it only takes a few seconds.</div>
+        </div>
+
+        <div class="sidebar__footer">
+          <div class="sidebar__status">
+            <span class="status-dot" id="backend-status-dot"></span>
+            <span id="backend-status-text">Checking backend…</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ═══ Main Content ═══ -->
+      <main class="dash-main">
+        <!-- Header Bar -->
+        <header class="dash-header">
+          <div>
+            <h1 class="dash-header__title" id="page-title">Home</h1>
+            <p class="dash-header__subtitle" id="page-subtitle">Here's how your inbox has been looking lately</p>
+          </div>
+          <div class="dash-header__actions">
+            <button type="button" class="user-chip" data-open-dev-profile aria-label="About Saliha Zulfiqar, developer">
+              <span class="user-chip__avatar">SZ</span>
+              <div>
+                <span class="user-chip__name">Saliha Zulfiqar</span>
+                <span class="user-chip__role" id="header-date">—</span>
+              </div>
+            </button>
+            <div class="dash-header__search">
+              <span class="dash-header__search-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.75"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></span>
+              <input
+                type="text"
+                class="dash-header__search-input"
+                placeholder="Search emails…"
+                id="global-search"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+        </header>
+
+        <div class="dash-content">
+
+          <!-- ═══ TAB 1: Overview ═══ -->
+          <div class="tab-panel tab-panel--active" id="panel-overview">
+
+            <div class="welcome-banner">
+              <div class="welcome-banner__card">
+                <div class="welcome-banner__eyebrow">✦ Your inbox guardian</div>
+                <div class="welcome-banner__greeting" id="welcome-greeting">Good afternoon, Saliha</div>
+                <div class="welcome-banner__desc">Here's what's been happening with your emails — scans, flags, and anything that looked a bit fishy.</div>
+                <p class="accent-note" style="margin-top:12px;">Tip: scan before you click any link.</p>
+              </div>
+              <div class="welcome-banner__illus" aria-hidden="true">
+                <svg viewBox="0 0 200 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="30" y="55" width="90" height="60" rx="8" fill="#e8eeff" stroke="#3461ff" stroke-width="2"/>
+                  <path d="M30 55l45 32 45-32" stroke="#3461ff" stroke-width="2" stroke-linejoin="round"/>
+                  <circle cx="155" cy="45" r="28" fill="#fff0f0" stroke="#ff6b6b" stroke-width="2"/>
+                  <path d="M145 45l7 7 14-14" stroke="#ff6b6b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="120" y="85" width="55" height="38" rx="6" fill="#ecfdf5" stroke="#22c55e" stroke-width="2"/>
+                  <path d="M132 102h31M132 110h22" stroke="#22c55e" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                  <circle cx="55" cy="30" r="6" fill="#f59e0b" opacity="0.7"/>
+                  <circle cx="170" cy="95" r="4" fill="#3461ff" opacity="0.5"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="stats-grid">
+              <div class="stat-card stat-card--total">
+                <div class="stat-card__header">
+                  <span class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16v12H4V6z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  <span class="stat-card__label">Total Analyzed</span>
+                </div>
+                <div class="stat-card__value" id="stat-total">0</div>
+                <div class="stat-card__sub" id="stat-total-sub">No emails analyzed yet</div>
+              </div>
+
+              <div class="stat-card stat-card--phishing">
+                <div class="stat-card__art" aria-hidden="true"></div>
+                <div class="stat-card__header">
+                  <span class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 3h4l1 4H9l1-4z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><rect x="5" y="7" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.75"/></svg></span>
+                  <span class="stat-card__label">Phishing Detected</span>
+                </div>
+                <div class="stat-card__value" id="stat-phishing">0</div>
+                <div class="stat-card__sub" id="stat-phishing-sub">0% of total</div>
+              </div>
+
+              <div class="stat-card stat-card--legit">
+                <div class="stat-card__art" aria-hidden="true"></div>
+                <div class="stat-card__header">
+                  <span class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75"/></svg></span>
+                  <span class="stat-card__label">Legitimate</span>
+                </div>
+                <div class="stat-card__value" id="stat-legit">0</div>
+                <div class="stat-card__sub" id="stat-legit-sub">0% of total</div>
+              </div>
+
+              <div class="stat-card stat-card--risk">
+                <div class="stat-card__art" aria-hidden="true"></div>
+                <div class="stat-card__header">
+                  <span class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 8v4l2 2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75"/></svg></span>
+                  <span class="stat-card__label">Avg Risk Score</span>
+                </div>
+                <div class="stat-card__value" id="stat-avg-risk">0</div>
+                <div class="stat-card__sub" id="stat-avg-risk-sub">out of 100</div>
+              </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="charts-row">
+              <!-- Donut Chart: Classification Distribution -->
+              <div class="section-card">
+                <div class="section-card__header">
+                  <h2 class="section-card__title">
+                    <span class="section-card__title-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></span>
+                    Safe vs. suspicious
+                  </h2>
+                </div>
+                <div class="section-card__body">
+                  <div class="donut-chart-container" id="donut-container">
+                    <div class="donut-chart">
+                      <svg viewBox="0 0 160 160">
+                        <circle class="donut-chart__bg" />
+                        <circle class="donut-chart__legit" id="donut-legit" />
+                        <circle class="donut-chart__phishing" id="donut-phishing" />
+                      </svg>
+                      <div class="donut-chart__center">
+                        <span class="donut-chart__center-value" id="donut-center-value">0</span>
+                        <span class="donut-chart__center-label">Emails</span>
+                      </div>
+                    </div>
+                    <div class="donut-legend">
+                      <div class="donut-legend__item">
+                        <span class="donut-legend__dot donut-legend__dot--legit"></span>
+                        <span class="donut-legend__text">Legitimate <span class="donut-legend__value" id="legend-legit">0</span></span>
+                      </div>
+                      <div class="donut-legend__item">
+                        <span class="donut-legend__dot donut-legend__dot--phishing"></span>
+                        <span class="donut-legend__text">Phishing <span class="donut-legend__value" id="legend-phishing">0</span></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bar Chart: Risk Level Distribution -->
+              <div class="section-card">
+                <div class="section-card__header">
+                  <h2 class="section-card__title">
+                    <span class="section-card__title-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 18V10M12 18V6M18 18v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+                    How risky were they?
+                  </h2>
+                </div>
+                <div class="section-card__body">
+                  <div class="bar-chart" id="bar-chart">
+                    <div class="bar-chart__col">
+                      <span class="bar-chart__count" id="bar-low-count">0</span>
+                      <div class="bar-chart__bar-track">
+                        <div class="bar-chart__bar bar-chart__bar--low" id="bar-low" style="height: 4px;"></div>
+                      </div>
+                      <span class="bar-chart__label">Low</span>
+                    </div>
+                    <div class="bar-chart__col">
+                      <span class="bar-chart__count" id="bar-med-count">0</span>
+                      <div class="bar-chart__bar-track">
+                        <div class="bar-chart__bar bar-chart__bar--medium" id="bar-med" style="height: 4px;"></div>
+                      </div>
+                      <span class="bar-chart__label">Medium</span>
+                    </div>
+                    <div class="bar-chart__col">
+                      <span class="bar-chart__count" id="bar-high-count">0</span>
+                      <div class="bar-chart__bar-track">
+                        <div class="bar-chart__bar bar-chart__bar--high" id="bar-high" style="height: 4px;"></div>
+                      </div>
+                      <span class="bar-chart__label">High</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Activity Feed -->
+            <div class="section-card">
+              <div class="section-card__header">
+                <h2 class="section-card__title">
+                  <span class="section-card__title-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></svg></span>
+                  Latest from your inbox
+                </h2>
+              </div>
+              <div class="section-card__body">
+                <div class="activity-feed" id="activity-feed">
+                  <div class="empty-state">
+                    <div class="empty-state__icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16v12H4V6z" stroke="currentColor" stroke-width="1.75"/><path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="1.75"/></svg></div>
+                    <div class="empty-state__title">No activity yet</div>
+                    <div class="empty-state__text">Open an email in Gmail and hit <strong>Check for phishing</strong> — your scans will show up here.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ TAB 2: Analysis History ═══ -->
+          <div class="tab-panel" id="panel-history">
+            <div class="section-card">
+              <div class="section-card__header">
+                <div class="history-toolbar">
+                  <div class="filter-group">
+                    <button class="filter-btn filter-btn--active" data-filter="all" id="filter-all">All</button>
+                    <button class="filter-btn" data-filter="PHISHING" id="filter-phishing">Phishing</button>
+                    <button class="filter-btn" data-filter="LEGITIMATE" id="filter-legit">Legitimate</button>
+                  </div>
+                  <div class="toolbar-spacer"></div>
+                  <button class="action-btn" id="export-csv-btn">Export CSV</button>
+                  <button class="action-btn action-btn--danger" id="clear-all-btn">Clear All</button>
+                </div>
+              </div>
+              <div class="section-card__body" style="padding: 0;">
+                <div class="history-table-wrap">
+                  <table class="history-table" id="history-table">
+                    <thead>
+                      <tr>
+                        <th>Time</th>
+                        <th>Sender</th>
+                        <th>Subject</th>
+                        <th>Classification</th>
+                        <th>Risk Score</th>
+                        <th style="width: 70px;"></th>
+                      </tr>
+                    </thead>
+                    <tbody id="history-tbody">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="empty-state" id="history-empty" style="display:none;">
+                  <div class="empty-state__icon"><svg viewBox="0 0 24 24" fill="none"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+                  <div class="empty-state__title">No analysis history</div>
+                  <div class="empty-state__text">Your scanned emails will land here with full details and risk scores.</div>
+                </div>
+                <div class="pagination" id="history-pagination"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ TAB 3: Threat Intelligence ═══ -->
+          <div class="tab-panel" id="panel-intelligence">
+            <div class="intel-grid">
+              <!-- Top Flagged Senders -->
+              <div class="section-card">
+                <div class="section-card__header">
+                  <h2 class="section-card__title">
+                    <span class="section-card__title-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.75"/><path d="M6 20c0-4 3.5-6 7-6s7 2 7 6" stroke="currentColor" stroke-width="1.75"/></svg></span>
+                    Top Flagged Senders
+                  </h2>
+                </div>
+                <div class="section-card__body">
+                  <div class="intel-list" id="top-senders-list">
+                    <div class="empty-state" style="padding: 30px;">
+                      <div class="empty-state__icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.75"/><path d="M6 20c0-4 3.5-6 7-6s7 2 7 6" stroke="currentColor" stroke-width="1.75"/></svg></div>
+                      <div class="empty-state__title">No data yet</div>
+                      <div class="empty-state__text">Analyze more emails to identify risky senders.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Common Urgency Keywords -->
+              <div class="section-card">
+                <div class="section-card__header">
+                  <h2 class="section-card__title">
+                    <span class="section-card__title-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M7 11V8a5 5 0 0110 0v3M6 11h12v9H6z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></svg></span>
+                    Common Urgency Keywords
+                  </h2>
+                </div>
+                <div class="section-card__body">
+                  <div class="intel-list" id="keywords-list">
+                    <div class="empty-state" style="padding: 30px;">
+                      <div class="empty-state__icon"><svg viewBox="0 0 24 24" fill="none"><path d="M7 11V8a5 5 0 0110 0v3M6 11h12v9H6z" stroke="currentColor" stroke-width="1.75"/></svg></div>
+                      <div class="empty-state__title">No data yet</div>
+                      <div class="empty-state__text">Keywords detected across emails will appear here.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Suspicious URL Patterns -->
+            <div class="section-card">
+              <div class="section-card__header">
+                <h2 class="section-card__title">
+                  <span class="section-card__title-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M10 14h4M8 10l-2 2a3 3 0 004 4l1-1M16 10l2 2a3 3 0 01-4 4l-1-1" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></span>
+                  Suspicious URL Patterns
+                </h2>
+              </div>
+              <div class="section-card__body">
+                <div class="intel-list" id="suspicious-urls-list">
+                  <div class="empty-state" style="padding: 30px;">
+                    <div class="empty-state__icon"><svg viewBox="0 0 24 24" fill="none"><path d="M10 14h4M8 10l-2 2a3 3 0 004 4l1-1M16 10l2 2a3 3 0 01-4 4l-1-1" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></div>
+                    <div class="empty-state__title">No suspicious URLs detected</div>
+                    <div class="empty-state__text">Suspicious URL patterns from analyzed emails will be aggregated here.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Security Tips -->
+            <div class="section-card">
+              <div class="section-card__header">
+                <h2 class="section-card__title">
+                  <span class="section-card__title-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 22h4M12 3a7 7 0 00-4 12.7V17h8v-1.3A7 7 0 0012 3z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></svg></span>
+                  Phishing Awareness Tips
+                </h2>
+              </div>
+              <div class="section-card__body">
+                <div class="tips-grid">
+                  <div class="tip-card">
+                    <div class="tip-card__icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.75"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></div>
+                    <div class="tip-card__title">Check Sender Addresses</div>
+                    <div class="tip-card__text">Always verify the full sender email address. Phishing emails often use domains that closely resemble legitimate ones (e.g., "paypa1.com" instead of "paypal.com").</div>
+                  </div>
+                  <div class="tip-card">
+                    <div class="tip-card__icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></div>
+                    <div class="tip-card__title">Beware of Urgency</div>
+                    <div class="tip-card__text">Phishing emails create a false sense of urgency — "act now," "account suspended," "verify immediately." Legitimate companies rarely pressure you with deadlines.</div>
+                  </div>
+                  <div class="tip-card">
+                    <div class="tip-card__icon"><svg viewBox="0 0 24 24" fill="none"><path d="M10 14h4M8 10l-2 2a3 3 0 004 4l1-1M16 10l2 2a3 3 0 01-4 4l-1-1" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg></div>
+                    <div class="tip-card__title">Hover Before You Click</div>
+                    <div class="tip-card__text">Always hover over links to preview the actual URL. If it looks unfamiliar, contains IP addresses, or has suspicious subdomains, don't click it.</div>
+                  </div>
+                  <div class="tip-card">
+                    <div class="tip-card__icon"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.75"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="1.75"/></svg></div>
+                    <div class="tip-card__title">Never Share Credentials</div>
+                    <div class="tip-card__text">No legitimate service will ask for your password, PIN, or security codes via email. If asked, it's almost certainly a phishing attempt.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ TAB 4: Settings ═══ -->
+          <div class="tab-panel" id="panel-settings">
+            <div class="settings-grid">
+              <!-- Backend Configuration -->
+              <div class="setting-group">
+                <div class="setting-group__title">Backend Configuration</div>
+                <div class="setting-group__desc">Configure the connection to your PhishGuard analysis server.</div>
+                <div class="setting-row">
+                  <span class="setting-row__label">API Server URL</span>
+                  <input type="text" class="setting-row__input" id="setting-api-url" value="http://localhost:8000" />
+                </div>
+                <div class="setting-row">
+                  <span class="setting-row__label">Connection Status</span>
+                  <span class="sidebar__status">
+                    <span class="status-dot" id="setting-status-dot"></span>
+                    <span id="setting-status-text">Checking…</span>
+                  </span>
+                </div>
+                <div class="setting-row" style="border-bottom:none; padding-top: 16px;">
+                  <span></span>
+                  <button class="action-btn action-btn--primary" id="save-settings-btn">Save Settings</button>
+                </div>
+              </div>
+
+              <!-- Appearance -->
+              <div class="setting-group">
+                <div class="setting-group__title">Appearance</div>
+                <div class="setting-group__desc">Choose how PhishGuard looks. Dark mode keeps text readable on every screen.</div>
+                <div class="setting-row">
+                  <span class="setting-row__label setting-row__theme-label">
+                    Dark mode
+                    <span class="setting-row__theme-hint">Easier on the eyes in low light</span>
+                  </span>
+                  <label class="theme-toggle" for="setting-dark-mode" title="Toggle dark mode">
+                    <input type="checkbox" class="theme-toggle__input" id="setting-dark-mode" aria-label="Enable dark mode" />
+                    <span class="theme-toggle__track" aria-hidden="true"></span>
+                    <span class="theme-toggle__thumb" aria-hidden="true"></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Data Management -->
+              <div class="setting-group">
+                <div class="setting-group__title">Data Management</div>
+                <div class="setting-group__desc">Manage your locally stored analysis history. All data is stored in your browser and never sent to external servers.</div>
+                <div class="setting-row">
+                  <span class="setting-row__label">Analysis records stored</span>
+                  <span id="setting-record-count" style="font-weight: 700; color: var(--text-primary);">0</span>
+                </div>
+                <div class="setting-row">
+                  <span class="setting-row__label">Clear all analysis data</span>
+                  <button class="action-btn action-btn--danger" id="settings-clear-btn">Clear All Data</button>
+                </div>
+              </div>
+
+              <!-- About -->
+              <div class="about-card">
+                <div class="about-card__title">PhishGuard AI</div>
+                <div class="about-card__text">
+                  PhishGuard AI is a browser-based email threat detection system with heuristic feature extraction and AI-powered analysis. It checks emails for phishing indicators including urgency patterns, suspicious URLs, domain mismatches, and brand impersonation.
+                  <br /><br />
+                  Analysis runs through your local backend. History stays in your browser — nothing is stored on external servers.
+                </div>
+                <span class="about-card__version">
+                  <span class="status-dot status-dot--online"></span>
+                  v1.1 · PhishGuard AI
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+
+    <div class="dev-profile-overlay" id="dev-profile-overlay" aria-hidden="true" role="dialog" aria-labelledby="dev-profile-name">
+      <div class="dev-profile-card">
+        <button type="button" class="dev-profile-card__close" aria-label="Close">&times;</button>
+        <div class="dev-profile-card__avatar-wrap">
+          <div class="dev-profile-card__avatar" aria-hidden="true">SZ</div>
+        </div>
+        <h2 class="dev-profile-card__name" id="dev-profile-name">Saliha Zulfiqar</h2>
+        <p class="dev-profile-card__title">AI Developer</p>
+        <div class="dev-profile-card__info">
+          <strong>Information Security Project</strong>
+          <span>PhishGuard AI — Email Threat Detection</span>
+          <span>Chrome Extension &amp; FastAPI Backend</span>
+        </div>
+        <div class="dev-profile-card__actions">
+          <a class="dev-profile-card__btn dev-profile-card__btn--github" id="dev-profile-github-repo" href="https://github.com/Saliha-Zulfiqar/IS_project" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub Repository
+          </a>
+          <a class="dev-profile-card__btn dev-profile-card__btn--hf" id="dev-profile-hf-model" href="https://huggingface.co/omerfarooq223/phishing-detector-phi3-lora" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 3a9 9 0 100 18 9 9 0 000-18z"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>
+            Fine-tuned Model on Hugging Face
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script src="dev-profile.js"></script>
+    <script src="dashboard.js"></script>
+  </body>
+</html>

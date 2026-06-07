@@ -4,19 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PhishGuard AI</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="icon32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="icon16.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&display=swap"
       rel="stylesheet"
     />
+    <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="human-ui.css" />
+    <link rel="stylesheet" href="dev-profile.css" />
+    <link rel="stylesheet" href="theme.css" />
   </head>
   <body>
     <div class="popup">
       <div class="popup__bg" aria-hidden="true">
         <span class="popup__orb popup__orb--1"></span>
         <span class="popup__orb popup__orb--2"></span>
+        <span class="popup__orb popup__orb--3"></span>
         <span class="popup__grid"></span>
       </div>
 
@@ -42,61 +49,98 @@
             </span>
             <div>
               <h1 class="header__title">PhishGuard AI</h1>
-              <p class="header__tagline">Phishing detection &amp; risk scoring</p>
+              <p class="header__tagline">quick check before you click</p>
             </div>
           </div>
-          <span class="header__pill">
-            <span class="header__pill-dot"></span>
-            Phi-3 LoRA
-          </span>
+          <div class="header__actions">
+            <button id="open-dashboard-btn" class="header__btn header__btn--ghost" type="button" title="Open dashboard">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.75"/>
+                <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.75"/>
+                <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.75"/>
+                <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.75"/>
+              </svg>
+              <span>Dashboard</span>
+            </button>
+            <button id="close-panel-btn" class="header__btn header__btn--close hidden" type="button" title="Close panel" aria-label="Close panel">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="header__status" id="header-status">
+          <span class="header__status-dot" aria-hidden="true"></span>
+          <span class="header__status-text">Ready when you are — we'll scan this email in seconds</span>
         </div>
       </header>
 
       <main class="main">
+        <div class="mail-preview" id="mail-preview">
+          <div class="mail-preview__stamp" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16v12H4V6z" stroke="currentColor" stroke-width="1.75"/><path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="1.75"/></svg>
+          </div>
+          <div class="mail-preview__label">Currently reading</div>
+          <div class="mail-preview__from" id="preview-from">Pick an email in Gmail first</div>
+          <div class="mail-preview__subject" id="preview-subject">We'll pull the details for you</div>
+        </div>
+
         <section class="card card--input" aria-labelledby="input-heading">
           <div class="section-head">
-            <h2 id="input-heading" class="section-title">Email to analyze</h2>
-            <span class="section-head__hint">Paste or type below</span>
+            <h2 id="input-heading" class="section-title">
+              <svg class="section-title__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 6h16v12H4V6z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+                <path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              What we're looking at
+            </h2>
+            <span class="section-head__hint" id="extract-hint">Auto-filled from your open email</span>
           </div>
 
           <div class="field">
             <label class="field__label" for="sender">
-              <span class="field__label-icon" aria-hidden="true">@</span>
-              Sender email
+              <span class="field__label-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.75"/><path d="M5 20c0-4 3.5-6 7-6s7 2 7 6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+              </span>
+              Who sent it?
             </label>
             <input
               type="text"
               id="sender"
               class="field__input"
-              placeholder="sender@example.com"
+              placeholder="sender@company.com"
               autocomplete="off"
             />
           </div>
 
           <div class="field">
             <label class="field__label" for="subject">
-              <span class="field__label-icon" aria-hidden="true">✉</span>
+              <span class="field__label-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M5 12h10M5 17h7" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+              </span>
               Subject line
             </label>
             <input
               type="text"
               id="subject"
               class="field__input"
-              placeholder="Email subject"
+              placeholder="What's the email about?"
               autocomplete="off"
             />
           </div>
 
           <div class="field">
             <label class="field__label" for="body">
-              <span class="field__label-icon" aria-hidden="true">¶</span>
-              Email body
+              <span class="field__label-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M6 5h12a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z" stroke="currentColor" stroke-width="1.75"/><path d="M8 10h8M8 14h5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+              </span>
+              Message content
             </label>
             <textarea
               id="body"
               class="field__textarea"
               rows="5"
-              placeholder="Paste the full email content here…"
+              placeholder="The email body will appear here — feel free to edit anything before scanning."
             ></textarea>
           </div>
 
@@ -104,47 +148,67 @@
             <span class="btn__glow" aria-hidden="true"></span>
             <span class="btn__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75" />
-                <path
-                  d="M12 8v4l2.5 2.5M8.5 3.5l1 1M15.5 3.5l-1 1"
-                  stroke="currentColor"
-                  stroke-width="1.75"
-                  stroke-linecap="round"
-                />
+                <path d="M12 3a9 9 0 100 18 9 9 0 000-18z" stroke="currentColor" stroke-width="1.75"/>
+                <path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </span>
-            <span class="btn__text">Analyze Email</span>
+            <span class="btn__text">Scan this email</span>
           </button>
         </section>
 
         <div id="loading" class="loading hidden" role="status" aria-live="polite">
-          <div class="loading__rings" aria-hidden="true">
-            <span></span><span></span><span></span>
+          <div class="loading__visual" aria-hidden="true">
+            <div class="loading__shield">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L4 6v6c0 5.25 3.4 10.15 8 11.35C16.6 22.15 20 17.25 20 12V6l-8-4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="loading__rings">
+              <span></span><span></span><span></span>
+            </div>
           </div>
-          <p class="loading__text">Running AI threat analysis…</p>
-          <p class="loading__sub">Fine-tuned Phi-3 model on local API</p>
+          <p class="loading__text">Hang tight — we're checking for red flags…</p>
+          <p class="loading__sub">Looking at links, urgency cues, and sender patterns</p>
+          <div class="loading__steps" aria-hidden="true">
+            <span class="loading__step loading__step--active">Reading content</span>
+            <span class="loading__step">Checking URLs</span>
+            <span class="loading__step">Scoring risk</span>
+          </div>
         </div>
 
         <div id="error-message" class="error hidden" role="alert"></div>
 
         <section id="results" class="results hidden" aria-live="polite">
+          <div id="verdict-strip" class="verdict-strip verdict-strip--safe hidden" role="status"></div>
           <div class="results__hero">
             <div class="gauge">
               <div id="risk-circle" class="risk-circle risk-circle--low">
                 <div class="risk-circle__inner">
                   <span id="risk-score-value" class="risk-circle__score">0</span>
-                  <span class="risk-circle__label">Risk</span>
+                  <span class="risk-circle__label">Risk score</span>
                 </div>
               </div>
             </div>
             <div class="results__meta">
-              <span id="classification-badge" class="badge badge--legitimate">LEGITIMATE</span>
+              <span id="classification-badge" class="badge badge--legitimate">
+                <svg class="badge__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75"/>
+                </svg>
+                Looks safe
+              </span>
               <div class="meta-chips">
                 <span class="meta-chip">
-                  <span class="meta-chip__label">Level</span>
+                  <span class="meta-chip__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+                  </span>
+                  <span class="meta-chip__label">Threat level</span>
                   <strong id="risk-level">LOW</strong>
                 </span>
                 <span class="meta-chip">
+                  <span class="meta-chip__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 3a9 9 0 100 18" stroke="currentColor" stroke-width="1.75"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+                  </span>
                   <span class="meta-chip__label">Confidence</span>
                   <strong id="confidence">—</strong>
                 </span>
@@ -154,44 +218,62 @@
 
           <div class="card card--panel card--analysis">
             <h3 class="panel-title">
-              <span class="panel-title__icon" aria-hidden="true">◈</span>
-              Analysis
+              <span class="panel-title__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.75"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+              </span>
+              What we noticed
             </h3>
             <div id="reasons" class="panel-box panel-box--reasons">
-              <p class="panel-box__placeholder">Reasons will appear here after analysis.</p>
+              <p class="panel-box__placeholder">Your analysis summary will show up here.</p>
             </div>
           </div>
 
           <div class="card card--panel card--recommend">
             <h3 class="panel-title">
-              <span class="panel-title__icon" aria-hidden="true">⚡</span>
-              Recommendation
+              <span class="panel-title__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4l2-4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              </span>
+              What you should do
             </h3>
             <div id="recommendation" class="panel-box panel-box--recommendation">
-              <p class="panel-box__placeholder">Action guidance will appear here.</p>
+              <p class="panel-box__placeholder">We'll suggest next steps once the scan finishes.</p>
             </div>
           </div>
 
           <div class="card card--panel card--features">
             <h3 class="panel-title">
-              <span class="panel-title__icon" aria-hidden="true">▤</span>
+              <span class="panel-title__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+              </span>
               Signal breakdown
             </h3>
             <dl class="features" id="features-breakdown">
               <div class="features__row">
-                <dt>Urgency words</dt>
+                <dt>
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v5M12 16v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75"/></svg>
+                  Urgency words
+                </dt>
                 <dd id="feat-urgency">—</dd>
               </div>
               <div class="features__row">
-                <dt>URL count</dt>
+                <dt>
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 14L14 10M14 10h-4M14 10v4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><rect x="4" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.75"/></svg>
+                  URL count
+                </dt>
                 <dd id="feat-url-count">—</dd>
               </div>
               <div class="features__row">
-                <dt>Suspicious URLs</dt>
+                <dt>
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 9v4M12 16v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 3h4l1 4H9l1-4z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><rect x="5" y="7" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.75"/></svg>
+                  Suspicious URLs
+                </dt>
                 <dd id="feat-suspicious-urls">—</dd>
               </div>
               <div class="features__row">
-                <dt>Domain mismatch</dt>
+                <dt>
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="1.75"/><path d="M6 20c0-3.5 2.5-5 6-5s6 1.5 6 5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><path d="M16 8l3-2M8 8L5 6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+                  Domain mismatch
+                </dt>
                 <dd id="feat-domain-mismatch">—</dd>
               </div>
             </dl>
@@ -200,12 +282,48 @@
       </main>
 
       <footer class="footer">
-        <span class="footer__brand">PhishGuard</span>
+        <span class="footer__brand">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" width="12" height="12">
+            <path d="M12 2L4 6v6c0 5.25 3.4 10.15 8 11.35C16.6 22.15 20 17.25 20 12V6l-8-4z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+          </svg>
+          PhishGuard
+        </span>
         <span class="footer__sep">·</span>
-        <span>Phi-3 LoRA · Local API :8000</span>
+        <span>Protected by AI threat detection</span>
+        <button type="button" class="dev-profile-trigger--compact" data-open-dev-profile aria-label="About the developer">
+          <span class="dev-profile-trigger__dot">SZ</span>
+          Saliha Zulfiqar
+        </button>
       </footer>
     </div>
 
+    <div class="dev-profile-overlay" id="dev-profile-overlay" aria-hidden="true" role="dialog" aria-labelledby="dev-profile-name">
+      <div class="dev-profile-card">
+        <button type="button" class="dev-profile-card__close" aria-label="Close">&times;</button>
+        <div class="dev-profile-card__avatar-wrap">
+          <div class="dev-profile-card__avatar" aria-hidden="true">SZ</div>
+        </div>
+        <h2 class="dev-profile-card__name" id="dev-profile-name">Saliha Zulfiqar</h2>
+        <p class="dev-profile-card__title">AI Developer</p>
+        <div class="dev-profile-card__info">
+          <strong>Information Security Project</strong>
+          <span>PhishGuard AI — Email Threat Detection</span>
+          <span>Chrome Extension &amp; FastAPI Backend</span>
+        </div>
+        <div class="dev-profile-card__actions">
+          <a class="dev-profile-card__btn dev-profile-card__btn--github" id="dev-profile-github-repo" href="https://github.com/Saliha-Zulfiqar/IS_project" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub Repository
+          </a>
+          <a class="dev-profile-card__btn dev-profile-card__btn--hf" id="dev-profile-hf-model" href="https://huggingface.co/omerfarooq223/phishing-detector-phi3-lora" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 3a9 9 0 100 18 9 9 0 000-18z"/><path d="M8 12h8M12 8v8" stroke-linecap="round"/></svg>
+            Fine-tuned Model on Hugging Face
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script src="dev-profile.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

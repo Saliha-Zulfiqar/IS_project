@@ -1,6 +1,5 @@
-const API_URL = "http://localhost:8000/analyze";
-
-
+const isEmbedded = new URLSearchParams(window.location.search).has("embedded");
+let loadingStepTimer = null;
 
 const els = {
   sender: document.getElementById("sender"),
@@ -18,7 +17,70 @@ const els = {
   reasons: document.getElementById("reasons"),
   recommendation: document.getElementById("recommendation"),
   featuresBreakdown: document.getElementById("features-breakdown"),
+  headerStatus: document.getElementById("header-status"),
+  headerStatusText: document.querySelector(".header__status-text"),
+  closePanelBtn: document.getElementById("close-panel-btn"),
+  extractHint: document.getElementById("extract-hint"),
+  previewFrom: document.getElementById("preview-from"),
+  previewSubject: document.getElementById("preview-subject"),
+  verdictStrip: document.getElementById("verdict-strip"),
 };
+
+function syncMailPreview() {
+  const sender = els.sender?.value.trim();
+  const subject = els.subject?.value.trim();
+  if (els.previewFrom) {
+    els.previewFrom.textContent = sender || "Waiting for sender…";
+  }
+  if (els.previewSubject) {
+    els.previewSubject.textContent = subject || "Subject will appear here";
+  }
+}
+
+const FEATURE_ICONS = {
+  urgency: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v5M12 16v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75"/></svg>',
+  urls: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 14L14 10M14 10h-4M14 10v4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><rect x="4" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.75"/></svg>',
+  suspicious: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 9v4M12 16v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 3h4l1 4H9l1-4z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><rect x="5" y="7" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.75"/></svg>',
+  domain: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="1.75"/><path d="M6 20c0-3.5 2.5-5 6-5s6 1.5 6 5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><path d="M16 8l3-2M8 8L5 6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>',
+};
+
+function setHeaderStatus(state, text) {
+  if (!els.headerStatus) return;
+  els.headerStatus.classList.remove(
+    "header__status--scanning",
+    "header__status--done",
+    "header__status--alert"
+  );
+  if (state) els.headerStatus.classList.add(`header__status--${state}`);
+  if (text && els.headerStatusText) els.headerStatusText.textContent = text;
+}
+
+function getBadgeHtml(classification) {
+  const isPhishing = classification === "PHISHING";
+  const label = isPhishing ? "Possible phishing" : "Looks safe";
+  const icon = isPhishing
+    ? '<svg class="badge__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 9v4M12 16v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75"/></svg>'
+    : '<svg class="badge__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.75"/></svg>';
+  return { label, icon, className: isPhishing ? "badge badge--phishing" : "badge badge--legitimate" };
+}
+
+function animateLoadingSteps() {
+  const steps = els.loading?.querySelectorAll(".loading__step");
+  if (!steps?.length) return;
+  let index = 0;
+  steps.forEach((s, i) => s.classList.toggle("loading__step--active", i === 0));
+  loadingStepTimer = setInterval(() => {
+    index = (index + 1) % steps.length;
+    steps.forEach((s, i) => s.classList.toggle("loading__step--active", i === index));
+  }, 1400);
+}
+
+function stopLoadingSteps() {
+  if (loadingStepTimer) {
+    clearInterval(loadingStepTimer);
+    loadingStepTimer = null;
+  }
+}
 
 function escapeHtml(text) {
   const div = document.createElement("div");
@@ -73,19 +135,19 @@ function formatFeaturesHtml(features) {
 
   return `
     <div class="features__row">
-      <dt>Urgency words</dt>
+      <dt>${FEATURE_ICONS.urgency} Urgency words</dt>
       <dd>${urgencyHtml}</dd>
     </div>
     <div class="features__row">
-      <dt>URL count</dt>
+      <dt>${FEATURE_ICONS.urls} URL count</dt>
       <dd>${urlCountHtml}</dd>
     </div>
     <div class="features__row">
-      <dt>Suspicious URLs</dt>
+      <dt>${FEATURE_ICONS.suspicious} Suspicious URLs</dt>
       <dd>${suspiciousHtml}</dd>
     </div>
     <div class="features__row">
-      <dt>Domain mismatch</dt>
+      <dt>${FEATURE_ICONS.domain} Domain mismatch</dt>
       <dd>${domainHtml}</dd>
     </div>
   `;
@@ -136,6 +198,7 @@ function animateRiskScore(targetScore, durationMs = 900) {
 
 function clearResults() {
   els.results.classList.add("hidden");
+  if (els.verdictStrip) els.verdictStrip.classList.add("hidden");
   els.errorMessage.classList.add("hidden");
   els.errorMessage.textContent = "";
 
@@ -148,8 +211,9 @@ function clearResults() {
   els.riskCircle.classList.add("risk-circle--low");
   setRiskCircleFill(0);
 
-  els.classificationBadge.textContent = "LEGITIMATE";
-  els.classificationBadge.className = "badge badge--legitimate";
+  const defaultBadge = getBadgeHtml("LEGITIMATE");
+  els.classificationBadge.className = defaultBadge.className;
+  els.classificationBadge.innerHTML = `${defaultBadge.icon}${defaultBadge.label}`;
   els.riskLevel.textContent = "LOW";
   els.confidence.textContent = "—";
   const levelChip = els.riskLevel.closest(".meta-chip");
@@ -165,19 +229,19 @@ function clearResults() {
 
   els.featuresBreakdown.innerHTML = `
     <div class="features__row">
-      <dt>Urgency words</dt>
+      <dt>${FEATURE_ICONS.urgency} Urgency words</dt>
       <dd id="feat-urgency">—</dd>
     </div>
     <div class="features__row">
-      <dt>URL count</dt>
+      <dt>${FEATURE_ICONS.urls} URL count</dt>
       <dd id="feat-url-count">—</dd>
     </div>
     <div class="features__row">
-      <dt>Suspicious URLs</dt>
+      <dt>${FEATURE_ICONS.suspicious} Suspicious URLs</dt>
       <dd id="feat-suspicious-urls">—</dd>
     </div>
     <div class="features__row">
-      <dt>Domain mismatch</dt>
+      <dt>${FEATURE_ICONS.domain} Domain mismatch</dt>
       <dd id="feat-domain-mismatch">—</dd>
     </div>
   `;
@@ -186,11 +250,18 @@ function clearResults() {
 function showLoading(show) {
   els.loading.classList.toggle("hidden", !show);
   els.analyzeBtn.disabled = show;
+  if (show) {
+    setHeaderStatus("scanning", "Scanning in progress — this usually takes a few seconds");
+    animateLoadingSteps();
+  } else {
+    stopLoadingSteps();
+  }
 }
 
 function showError(message) {
   els.errorMessage.textContent = message;
   els.errorMessage.classList.remove("hidden");
+  setHeaderStatus("alert", "Something went wrong — see the message below");
 }
 
 function hideError() {
@@ -203,8 +274,15 @@ function validateInputs() {
   const subject = els.subject.value.trim();
   const body = els.body.value.trim();
 
-  if (!sender || !subject || !body) {
-    showError("Please fill in sender, subject, and email body before analyzing.");
+  if (!subject || !body) {
+    showError("We need the subject and message body to run a scan. Fill in any missing fields above.");
+    return null;
+  }
+
+  if (!sender) {
+    showError(
+      "We couldn't read who sent this email from Gmail. Add the sender address in the field above, then scan again."
+    );
     return null;
   }
 
@@ -215,11 +293,9 @@ function displayResults(data) {
   const score = parseInt(data.risk_score ?? 0, 10) || 0;
   const classification = data.classification || "LEGITIMATE";
 
-  els.classificationBadge.textContent = classification;
-  els.classificationBadge.className =
-    classification === "PHISHING"
-      ? "badge badge--phishing"
-      : "badge badge--legitimate";
+  const badge = getBadgeHtml(classification);
+  els.classificationBadge.className = badge.className;
+  els.classificationBadge.innerHTML = `${badge.icon}${badge.label}`;
 
   const level = (data.risk_level || "LOW").toUpperCase();
   els.riskLevel.textContent = level;
@@ -236,8 +312,22 @@ function displayResults(data) {
 
   els.featuresBreakdown.innerHTML = formatFeaturesHtml(data.features);
 
-  // Reveal results smoothly using the CSS-defined animation (fadeSlideIn) without transition conflicts
   els.results.classList.remove("hidden");
+
+  if (els.verdictStrip) {
+    const isPhish = classification === "PHISHING";
+    els.verdictStrip.classList.remove("hidden", "verdict-strip--safe", "verdict-strip--danger");
+    els.verdictStrip.classList.add(isPhish ? "verdict-strip--danger" : "verdict-strip--safe");
+    els.verdictStrip.textContent = isPhish
+      ? "I'd be careful with this one — something about it doesn't add up."
+      : "This one passed our checks. Still trust your gut if anything feels off.";
+  }
+
+  const statusMsg =
+    classification === "PHISHING"
+      ? "Heads up — this email shows signs of a phishing attempt"
+      : "All clear — no major red flags detected in this email";
+  setHeaderStatus(classification === "PHISHING" ? "alert" : "done", statusMsg);
 
   animateRiskScore(score);
 }
@@ -251,27 +341,128 @@ async function analyzeEmail() {
 
   showLoading(true);
 
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+  chrome.storage.local.get("api_url", async (res) => {
+    const baseUrl = res.api_url || "http://localhost:8000";
+    const apiUrl = `${baseUrl.replace(/\/$/, '')}/analyze`;
 
-    if (!response.ok) {
-      throw new Error(`Server responded with status ${response.status}`);
+    try {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      displayResults(data);
+      saveToHistory(payload, data);
+    } catch (err) {
+      console.error("PhishGuard analyze error:", err);
+      showError(
+        `Could not reach the analysis server at ${apiUrl}. Make sure the backend is running and Settings are correct.`
+      );
+    } finally {
+      showLoading(false);
     }
-
-    const data = await response.json();
-    displayResults(data);
-  } catch (err) {
-    console.error("PhishGuard analyze error:", err);
-    showError(
-      "Could not reach the analysis server. Make sure the backend is running on port 8000 (python main.py in the backend folder), then try again."
-    );
-  } finally {
-    showLoading(false);
-  }
+  });
 }
 
+function saveToHistory(payload, data) {
+  chrome.storage.local.get("analysis_history", (res) => {
+    let history = res.analysis_history || [];
+    const newRecord = {
+      timestamp: new Date().toISOString(),
+      sender: payload.sender,
+      subject: payload.subject,
+      body: payload.body,
+      classification: data.classification || "LEGITIMATE",
+      risk_score: parseInt(data.risk_score ?? 0, 10) || 0,
+      risk_level: data.risk_level || "LOW",
+      confidence: data.confidence || "LOW",
+      reasons: data.reasons || "",
+      recommendation: data.recommendation || "",
+      features: data.features || {}
+    };
+
+    history.unshift(newRecord);
+
+    // Keep last 100 entries
+    if (history.length > 100) {
+      history = history.slice(0, 100);
+    }
+
+    chrome.storage.local.set({ analysis_history: history });
+  });
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  if (typeof PhishGuardTheme !== "undefined") {
+    PhishGuardTheme.initTheme();
+    PhishGuardTheme.watchTheme();
+  }
+
+  if (isEmbedded) {
+    document.body.classList.add("embedded");
+    if (els.closePanelBtn) {
+      els.closePanelBtn.classList.remove("hidden");
+      els.closePanelBtn.addEventListener("click", () => {
+        window.parent.postMessage({ type: "phishguard-close" }, "*");
+      });
+    }
+  }
+
+  chrome.storage.local.get("pending_analysis", (res) => {
+    if (res.pending_analysis) {
+      const email = res.pending_analysis;
+      els.sender.value = email.sender || "";
+      els.subject.value = email.subject || "";
+      els.body.value = email.body || "";
+      syncMailPreview();
+
+      const hasSubject = Boolean(email.subject?.trim());
+      const hasBody = Boolean(email.body?.trim());
+      const hasSender = Boolean(email.sender?.trim());
+      if (els.extractHint) {
+        if (hasSubject && hasBody && hasSender) {
+          els.extractHint.textContent = "Pulled from the email you're viewing";
+        } else if (hasSubject || hasBody) {
+          els.extractHint.textContent = hasSender
+            ? "Some fields missing — check sender, subject, and body"
+            : "Couldn't read the sender — check the From line in Gmail and edit above";
+        } else {
+          els.extractHint.textContent = "Couldn't auto-detect — paste the email details below";
+        }
+      }
+
+      if (!hasSubject && !hasBody) {
+        showError("We couldn't read this email automatically. Paste the subject and body above, then scan.");
+        setHeaderStatus("alert", "Auto-extract didn't find email content");
+      } else if (!hasSender) {
+        setHeaderStatus("alert", "Sender not detected — confirm the From address above");
+      } else {
+        setHeaderStatus("scanning", "Email loaded — starting your scan now…");
+        analyzeEmail();
+      }
+
+      chrome.storage.local.remove("pending_analysis");
+    }
+  });
+});
+
+["input", "change"].forEach((evt) => {
+  els.sender?.addEventListener(evt, syncMailPreview);
+  els.subject?.addEventListener(evt, syncMailPreview);
+});
+
 els.analyzeBtn.addEventListener("click", analyzeEmail);
+
+// Dashboard button logic
+const openDashboardBtn = document.getElementById("open-dashboard-btn");
+if (openDashboardBtn) {
+  openDashboardBtn.addEventListener("click", () => {
+    chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html") });
+  });
+}
