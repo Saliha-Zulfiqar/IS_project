@@ -1,11 +1,12 @@
 from . import groq_client
 _hf_client_available = False
 hf_client = None
+from . import email_parser
 from . import feature_extractor
 from .risk_scoring import finalize_analysis
 
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pydantic import BaseModel, Field
@@ -81,6 +82,10 @@ class AnalyzeRequest(BaseModel):
     sender: str = ""
     subject: str = ""
     body: str = ""
+    raw_text: str = Field(
+        default="",
+        description="Optional full email source (.eml paste). Overrides sender/subject/body when set.",
+    )
 
 
 class AnalyzeResponse(BaseModel):
@@ -91,6 +96,16 @@ class AnalyzeResponse(BaseModel):
     confidence: Confidence
     features: dict[str, Any]
     recommendation: str
+
+
+def _resolve_email_fields(request: AnalyzeRequest) -> tuple[str, str, str]:
+    if request.raw_text.strip():
+        try:
+            parsed = email_parser.parse_raw_email(request.raw_text)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        return parsed["sender"], parsed["subject"], parsed["body"]
+    return request.sender, request.subject, request.body
 
 
 def risk_level_from_score(score: int) -> RiskLevel:
@@ -124,15 +139,16 @@ def health() -> dict[str, Any]:
     }
 @app.post("/analyze", response_model=AnalyzeResponse)
 def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
+    sender, subject, body = _resolve_email_fields(request)
     features = feature_extractor.extract_features(
-        sender=request.sender,
-        subject=request.subject,
-        body=request.body,
+        sender=sender,
+        subject=subject,
+        body=body,
     )
     analysis = groq_client.analyze_with_groq(
-        sender=request.sender,
-        subject=request.subject,
-        body=request.body,
+        sender=sender,
+        subject=subject,
+        body=body,
         features=features,
     )
     analysis = finalize_analysis(features, analysis)
