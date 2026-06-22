@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
-import feature_extractor
+try:
+    from . import feature_extractor
+except ImportError:
+    import feature_extractor
 
 
 def _format_trusted_reason(features: dict[str, Any], org: str) -> str:

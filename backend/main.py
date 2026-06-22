@@ -1,9 +1,25 @@
-from . import groq_client
+try:
+    from . import groq_client
+except ImportError:
+    import groq_client
+
 _hf_client_available = False
 hf_client = None
-from . import email_parser
-from . import feature_extractor
-from .risk_scoring import finalize_analysis
+
+try:
+    from . import email_parser
+except ImportError:
+    import email_parser
+
+try:
+    from . import feature_extractor
+except ImportError:
+    import feature_extractor
+
+try:
+    from .risk_scoring import finalize_analysis
+except ImportError:
+    from risk_scoring import finalize_analysis
 
 import logging
 from fastapi import FastAPI, HTTPException
@@ -31,7 +47,7 @@ RECOMMENDATIONS: dict[RiskLevel, str] = {
 if _hf_client_available:
     MODEL_DISPLAY_NAME = f"{hf_client.BASE_MODEL} (LoRA: {hf_client.LORA_MODEL})"
 else:
-    MODEL_DISPLAY_NAME = "Groq API (no fine‑tuned model)"
+    MODEL_DISPLAY_NAME = "Groq API (no fine-tuned model)"
 
 
 @asynccontextmanager

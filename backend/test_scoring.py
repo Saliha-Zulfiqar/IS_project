@@ -7,15 +7,26 @@ from __future__ import annotations
 
 import sys
 
-from feature_extractor import (
-    compute_heuristic_risk_score,
-    compute_legitimate_baseline,
-    derive_classification,
-    extract_features,
-    has_strong_phishing_signals,
-    is_clearly_legitimate_context,
-)
-from risk_scoring import finalize_analysis
+try:
+    from .feature_extractor import (
+        compute_heuristic_risk_score,
+        compute_legitimate_baseline,
+        derive_classification,
+        extract_features,
+        has_strong_phishing_signals,
+        is_clearly_legitimate_context,
+    )
+    from .risk_scoring import finalize_analysis
+except ImportError:
+    from feature_extractor import (
+        compute_heuristic_risk_score,
+        compute_legitimate_baseline,
+        derive_classification,
+        extract_features,
+        has_strong_phishing_signals,
+        is_clearly_legitimate_context,
+    )
+    from risk_scoring import finalize_analysis
 
 SAMPLES = [
     {
